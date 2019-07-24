@@ -20,7 +20,7 @@ the observations don't correspond to unique biological samples.}
 
 \item{countsFromAbundance}{character corresponding the countsFromAbundance parameter used in \code{\link{tximport}} step}
 
-\item{GenAllGroupCombos}{is a TRUE/FALSE that generates all group combinations from key$Condition.  Only ever needed for certain power analyses, will almost always be set to FALSE.}
+\item{GenAllGroupCombos}{is a TRUE/FALSE indicator for generating all possible condition combinations from key$Condition.  Only ever needed for certain power analyses, will almost always be set to FALSE.}
 }
 \value{
 \code{sumToGene} saves initial files from the quantification.  These files include lists of gene-specific expression estimates with and with "OtherGroups",
