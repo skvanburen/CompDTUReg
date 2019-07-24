@@ -26,4 +26,12 @@ For examples of how to use the package, see the files contained within SampleCod
  <br>
 (4)RunCompositionalRegressions.R gives example code to run the DTU compositional regression analyses, both with and without incorporating the inferential replicates.  This includes the option to incorporate extra predictors other than condition. <br>
  <br>
- Files (2) and (3) need to loop over the different samples and parts that the data are split up into respectively.  Our code is written assuming slurm based array jobs, but loops could be used instead by modifying the code if necessary.  We recommend arrays if possible, especially if the number of samples is very high.
+ File (2) needs to be run separately for each different sample and (3) needs to be run separately for each part that the data is split up into.  The files need to be split up into parts in this way to make the amount of memory required by each part more manageable. <br>  
+   <br>
+Our code is written assuming slurm based array jobs, but loops could be used instead by modifying the code (see each file for more details).  We recommend arrays if possible, especially if the number of samples is very high.  Sample array jobs for (2) and (3) respectively are provided as (2)SampleArrayJob.sh and (3)SampleArrayJob.sh.  These files can be run using the following commands: <br>
+  <br>
+module load r <br>
+sbatch --array=1-10 (2)SampleArrayJob.sh <br>
+  <br>
+module load r <br>
+sbatch --array=1-10 (3)SampleArrayJob.sh <br>
