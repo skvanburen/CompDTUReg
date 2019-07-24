@@ -31,7 +31,9 @@ For examples of how to use the package, see the files contained within SampleCod
 Our code is written assuming slurm based array jobs, but loops could be used instead by modifying the code (see each file for more details).  We recommend arrays if possible, especially if the number of samples is very high.  Sample array jobs for (2) and (3) respectively are provided as (2)SampleArrayJob.sh and (3)SampleArrayJob.sh.  These files can be run using the following commands: <br>
   <br>
 module load r <br>
+#Update 10 to be the number of biological samples
 sbatch --array=1-10 (2)SampleArrayJob.sh <br>
   <br>
 module load r <br>
+#Update 10 to be the number of parts the data is split up into
 sbatch --array=1-10 (3)SampleArrayJob.sh <br>
