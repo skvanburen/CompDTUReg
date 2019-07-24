@@ -1,0 +1,20 @@
+Package: DTUCompReg
+Type: Package
+Title: DTUCompReg: Fit Compositional Regression Models for DTU
+Version: 0.1.0
+Authors@R: c(person("Scott", "Van Buren", email = "skvanburen@gmail.com", role = c("aut", "cre")), person("Naim", "Rashid", role="aut"))
+Maintainer: Scott Van Buren <skvanburen@gmail.com>
+Description: Fits Compositional Regression models for DTU analysis.
+License: GPL-2
+Depends: GenomicFeatures,
+	 data.table,
+	 parallel,
+	 gtools,
+	 DRIMSeq,
+	 tximport,
+	 plyr,
+	 compositions,
+	 Matrix
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
