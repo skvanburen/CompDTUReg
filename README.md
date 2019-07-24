@@ -2,7 +2,7 @@
 
 ## Introduction
 
-<code>DTUCompReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data.  This includes the procedure that incorporate inferential replicates into the model and the procedure that does not.
+<code>DTUCompReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in (Give bioarxiv link).
 
 ## Installation
 We recommend installing from Github for the latest version of the code:
@@ -13,7 +13,7 @@ library(DTUCompReg)
 ```
 
 ## Model
-For details of the model, see (Give bioarxiv link)
+For details of the model, see (Give bioarxiv link).
 
 ## Usage  
 For examples of how to use the package, see the files contained within SampleCode within the package.  These files provide a pipeline to run the DTUCompReg method starting with a folder of Salmon quantifications.  We recommend you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  Specifically:<br>
