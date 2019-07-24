@@ -1842,13 +1842,13 @@ calcIlrMeansCovs <- function(x, dat, nsamp){
 #' Save a file for each gene containing all information necessary to run DTUCompReg
 #' @param dir1 is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}
 #' @param DRIMSeqFiltering is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-#' using the OtherGroups approach we considered and generally should not be used
+#' using the OtherGroups approach we considered and generally should not be used.
 #' @param direc_to_save is the directory the gene level files will be saved to
 #' @export SaveGeneLevelFiles
-SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE){
+SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE){
   setwd(dir1)
-  abDatasetsSubDir <- "infRepsabDatasets/"
-  ilrMeansCovsSubDir <- "ilrMeansCovs/"
+
+
 
   if(DRIMSeqFiltering==TRUE){
     load("abGeneFiltered.RData")
@@ -1872,20 +1872,29 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE){
 
   genestouse <- names(abDatasets)
 
+  if(useInferentialReplicates==TRUE){
+    abDatasetsSubDir <- "infRepsabDatasets/"
+    ilrMeansCovsSubDir <- "ilrMeansCovs/"
 
-  if(DRIMSeqFiltering==TRUE){
-    ilrMeansCovs <- loadRData(paste0(save_dir, ilrMeansCovsSubDir, "ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num, ".RData"))
-    newAbDatasetsinfRepsFinal <- loadRData(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num,".RData"))
-  }else if(DRIMSeqFiltering==FALSE){
-    ilrMeansCovs <- loadRData(paste0(save_dir, ilrMeansCovsSubDir,"ilrMeansCovsBoot/ilrMeansCovsOtherGroupsPart", curr_part_num, ".RData"))
-    newAbDatasetsinfRepsFinal <- loadRData(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
+    if(DRIMSeqFiltering==TRUE){
+      ilrMeansCovs <- loadRData(paste0(save_dir, ilrMeansCovsSubDir, "ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num, ".RData"))
+      newAbDatasetsinfRepsFinal <- loadRData(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num,".RData"))
+    }else if(DRIMSeqFiltering==FALSE){
+      ilrMeansCovs <- loadRData(paste0(save_dir, ilrMeansCovsSubDir,"ilrMeansCovsBoot/ilrMeansCovsOtherGroupsPart", curr_part_num, ".RData"))
+      newAbDatasetsinfRepsFinal <- loadRData(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
+    }
+
+    newAbDatasetsinfRepsFinalSub <- newAbDatasetsinfRepsFinal[names(newAbDatasetsinfRepsFinal) %in% genestouse]
+    ilrMeansCovsSub <- ilrMeansCovs[names(ilrMeansCovs) %in% genestouse]
+
+    numg <- max(length(ilrMeansCovsSub), length(newAbDatasetsinfRepsFinalSub))
+    gnames <- names(ilrMeansCovsSub)
+  }else{
+    gnames <- genestouse
+    numg <- length(genestouse)
   }
 
-  newAbDatasetsinfRepsFinalSub <- newAbDatasetsinfRepsFinal[names(newAbDatasetsinfRepsFinal) %in% genestouse]
-  ilrMeansCovsSub <- ilrMeansCovs[names(ilrMeansCovs) %in% genestouse]
 
-  numg <- max(length(ilrMeansCovsSub), length(newAbDatasetsinfRepsFinalSub))
-  gnames <- names(ilrMeansCovsSub)
 
 
 
@@ -1903,8 +1912,11 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE){
     }
 
     abDatasetsToUse <- abDatasets[curr_gene]
-    ilrMeansCovs <- ilrMeansCovsSub[curr_gene]
-    newAbDatasetsGibbsFinal <- newAbDatasetsinfRepsFinalSub[curr_gene]
+    if(useInferentialReplicates==TRUE){
+      ilrMeansCovs <- ilrMeansCovsSub[curr_gene]
+      newAbDatasetsGibbsFinal <- newAbDatasetsinfRepsFinalSub[curr_gene]
+    }
+
 
     if(is.null(abDatasetsToUse[[1]])){
       next
@@ -1916,78 +1928,73 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE){
 
     Y <- unclass(ilr(ccomp(abDatasetsToUse[[1]], total = 1)))
 
+    #Remove "TPM" from rownames of Y if it is still present, as these no longer correspond to TPMs
     rownames(Y) <- strsplit(rownames(Y), "TPM")
 
     #Files by default contain both means and covariances of inferential reps (on ilr scale)
     #For this purpose, return only the covariances
-    if(is.null(ilrMeansCovs)==FALSE){
-      ReturnilrCovsOnly <- function(x, ilrMeansCovs){
-        temp1 <- ilrMeansCovs[[x]]$ilrCovs
-        return(temp1)
+    if(useInferentialReplicates==TRUE){
+      if(is.null(ilrMeansCovs)==FALSE){
+        ReturnilrCovsOnly <- function(x, ilrMeansCovs){
+          temp1 <- ilrMeansCovs[[x]]$ilrCovs
+          return(temp1)
+        }
+
+        ilrCovsToUse <- ReturnilrCovsOnly(x = curr_gene, ilrMeansCovs = ilrMeansCovs)
+        # if(!is.null(ilrCovsToUse)){
+        #   names(ilrCovsToUse) <- curr_gene
+        # }
+
+      }else{
+        ilrCovsToUse <- NULL
       }
 
-      ilrCovsToUse <- ReturnilrCovsOnly(x = curr_gene, ilrMeansCovs = ilrMeansCovs)
-      # if(!is.null(ilrCovsToUse)){
-      #   names(ilrCovsToUse) <- curr_gene
-      # }
+      ilrCovsOnly <- TRUE
 
-    }else{
-      ilrCovsToUse <- NULL
+      GibbsCovsToUse <- ilrCovsToUse
+
+      if(is.null(newAbDatasetsGibbsFinal)){
+        YInfRep <- NULL
+      }else if(ncol(newAbDatasetsGibbsFinal[[1]])==1){
+        YInfRep <- NULL
+      }else{
+        YInfRep <- unclass(ilr(ccomp(newAbDatasetsGibbsFinal[[1]], total = 1)))
+        rownames(YInfRep) <- lapply(strsplit(rownames(YInfRep), "TPM"), FUN = function(x){paste0(x[1], x[2])})
+      }
+
+      if(is.null(GibbsCovsToUse)){
+        mean.withinhat <- NULL
+      }else{
+        nsamp2 <- length(GibbsCovsToUse)
+        mean.withinhat <- tryCatch(Reduce("+", GibbsCovsToUse)/nsamp2, error = function(x){})
+      }
     }
 
-    ilrCovsOnly <- TRUE
 
 
-
-    # if(!is.null(ilrMeansCovs)){
-    #   if(ilrCovsOnly==TRUE){
-    #     GibbsCovsToUse <- ilrCovsToUse[[curr_gene]]
-    #   }else{
-    #     GibbsCovsToUse <- ilrCovsToUse[[curr_gene]]$ilrCovs
-    #   }
-    #   #If the GibbsCovsToUse is still NULL in this case, there isn't ilrMeansCovs information available so the modeling approaches can't be used
-    #   #This shouldn't happen in the full analysis, it is maybe here to avoid errors when restricting to a small subset of the available genes to test code
-    #   if(is.null(GibbsCovsToUse)){
-    #     print(paste0("GibbsCovsToUse is null for gene number ", x, " (", gene_id, ")"))
-    #     return(ret)
-    #   }
-    # }else{
-    #   GibbsCovsToUse <- NULL
-    # }
-
-
-
-    GibbsCovsToUse <- ilrCovsToUse
-
-    if(is.null(newAbDatasetsGibbsFinal)){
-      YInfRep <- NULL
-    }else if(ncol(newAbDatasetsGibbsFinal[[1]])==1){
-      YInfRep <- NULL
-    }else{
-      YInfRep <- unclass(ilr(ccomp(newAbDatasetsGibbsFinal[[1]], total = 1)))
-      rownames(YInfRep) <- lapply(strsplit(rownames(YInfRep), "TPM"), FUN = function(x){paste0(x[1], x[2])})
-    }
-
-    if(is.null(GibbsCovsToUse)){
-      mean.withinhat <- NULL
-    }else{
-      nsamp2 <- length(GibbsCovsToUse)
-      mean.withinhat <- tryCatch(Reduce("+", GibbsCovsToUse)/nsamp2, error = function(x){})
-    }
 
     Group <- key$Condition
     samps <- key$Identifier
     genename <- curr_gene
-    #save(key, Group, abDatasetsToUse, samps, mean.withinhat, newAbDatasetsGibbsFinal, file = paste0(direc_to_save, curr_gene, ".RData"))
-    save(key, Group, Y, samps, mean.withinhat, YInfRep, genename, file = paste0(direc_to_save, curr_gene, ".RData"))
-    rm(abDatasetsToUse)
-    rm(GibbsCovsToUse)
-    rm(ilrMeansCovs)
-    rm(newAbDatasetsGibbsFinal)
-    rm(Y)
-    rm(mean.withinhat)
-    rm(YInfRep)
-    rm(genename)
-    gc()
+
+    if(useInferentialReplicates==TRUE){
+      save(key, Group, Y, samps, mean.withinhat, YInfRep, genename, file = paste0(direc_to_save, curr_gene, ".RData"))
+      rm(abDatasetsToUse)
+      rm(GibbsCovsToUse)
+      rm(ilrMeansCovs)
+      rm(newAbDatasetsGibbsFinal)
+      rm(Y)
+      rm(mean.withinhat)
+      rm(YInfRep)
+      rm(genename)
+      gc()
+    }else{
+      save(key, Group, Y, samps, genename, file = paste0(direc_to_save, curr_gene, ".RData"))
+      rm(abDatasetsToUse)
+      rm(Y)
+      rm(genename)
+      gc()
+    }
+
   }
 }
