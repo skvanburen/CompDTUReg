@@ -1,0 +1,144 @@
+#Data Processing Code
+library(DTUCompReg)
+
+#def_wd is the top level directory where files will be saved
+def_wd <- "~/res/SQCCDataReproduceOldResBeforeCommonCodeTest/"
+if(!dir.exists(def_wd)){
+  dir.create(def_wd)
+}
+setwd(def_wd)
+
+#SalmonFilesDir is the directory where the Salmon quantification results have already been saved
+SalmonFilesDir <- "~/res/SQCCDataReproduceOldResBeforeCommonCode/SalmonReproduceResBeforeCommonCodeBootSamps/"
+
+#func_loc <- "~/code/CompFunctions.R"
+#source(func_loc)
+
+#Specify location of annotation to use in maketx2gene
+txdb_loc <- "~/gencode.v27.annotation.gtf.gz"
+
+
+
+#Construct a cluster from parallel package for possible use later.  For no parallelization, use makeCluster(1)
+clust <- makeCluster(1)
+
+#Build tx2gene dataframe matching transcripts to genes using GENCODE if it doesn't exist
+maketx2gene(txdb_loc = txdb_loc)
+
+#Ensure new tx2gene object can be loaded and load it
+load("tx2gene.RData")
+
+
+#Read in Salmon Files and save results (without inferential replicates for now, as trying to save all of them in one file
+  #can easily get prohibitively large)
+setwd(SalmonFilesDir)
+
+#Set value for countsFromAbundnace parameter for use with txImport
+  #Love (2018) (Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification [version 3])
+  #recommends "scaledTPM" for DTU analysis
+  #See tximport for further options
+countsFromAbundance <- "scaledTPM"
+
+
+
+
+#List of Salmon quantification files, which end in .sf
+QuantFiles <- mixedsort(list.files(pattern = ".sf", recursive = TRUE, full.names = TRUE))
+
+#Names of each element in QuantFiles must be set to "Sample1", "Sample2", etc even if they are not unique biological samples
+  #This is because this is how the code will expect the columns to be named
+  #tximport will name the columns in its created Salmon output object with these names and the code will expect them to be there
+  #in the format "Sample1", "Sample2", etc
+names(QuantFiles) <- paste0("Sample", 1:length(QuantFiles))
+
+#Create key matrix that contains matches samples to conditions and identifiers
+#Code later will be expecting key to have columns "Sample", "Condition", and "Identifier"
+#With identifier containing names as "Sample1", "Sample2", etc even if data isn't corresponding to unique biological samples
+  #because this is how future code will expect key to be constructed
+key <- matrix(c("SRR950078", "A",
+                "SRR950080", "A",
+                "SRR950082", "A",
+                "SRR950084", "A",
+                "SRR950086", "A",
+                "SRR950079", "B",
+                "SRR950081", "B",
+                "SRR950083", "B",
+                "SRR950085", "B",
+                "SRR950087", "B"), nrow = 10, ncol = 2, byrow = TRUE)
+key <- as.data.frame(key, stringsAsFactors = FALSE)
+key[3] <- paste0("Sample",1:nrow(key))
+colnames(key) <- c("Sample", "Condition", "Identifier")
+key$Condition <- relevel(as.factor(key$Condition), ref = 1)
+
+#key$Identifier has to be "Sample1", "Sample2", etc even if these don't correspond to unique samples because that is
+  #how the code will expect it
+
+#key$Condition needs contain information corresponding to the condition
+
+
+QuantSalmon <- tximport(QuantFiles, type = "salmon", txOut = TRUE, ignoreTxVersion = FALSE,
+                        countsFromAbundance = countsFromAbundance, dropInfReps = T)
+fulltransnames <- rownames(QuantSalmon$abundance) #transcript names
+
+
+
+save(QuantSalmon, QuantFiles, key, fulltransnames, countsFromAbundance,
+      file = paste0(SalmonFilesDir, "SalmonData.RData"))
+
+
+
+setwd(def_wd)
+
+#Files will save to def_wd
+  #These will be unfiltered lists with the data with each gene as a separate element
+sumToGene(QuantSalmon = QuantSalmon, tx2gene = tx2gene, clust = clust, key = key,
+          countsFromAbundance = countsFromAbundance)
+
+
+
+##################################################################
+#Filter Genes using DRIMSeq's Filtering Approach
+##################################################################
+load("abGene.RData")
+
+#Need to load the abDatasets file to extract existing MajorTrans info
+load("abDatasets.RData")
+
+
+
+if(countsFromAbundance=="scaledTPM" | countsFromAbundance=="lengthScaledTPM"){
+  load("cntGenecntsScaledTPM.RData")
+  load("cntDatasetsNoOtherGroupscntsScaledTPM.RData")
+  #load("failedgibbssampsCountsScaledTPM.RData")
+}else if(countsFromAbundance=="no"){
+  load("cntGene.RData")
+  load("cntDatasetsNoOtherGroups.RData")
+  #load("failedgibbssamps.RData")
+}
+
+
+
+#The filtering values below can be modified to make the filtering more or less strict
+#These are the default values used in
+#Love et al (2018) (Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification [version 3])
+
+
+#Sample size of smallest condition
+n.small <- min(table(key$Condition))
+n <- nrow(key)
+
+min_samps_feature_expr <- n.small
+min_feature_expr <- 10
+
+min_samps_feature_prop <- n.small
+min_feature_prop <- 0.10
+
+min_samps_gene_expr <- n
+min_gene_expr <- 10
+
+
+sampstouse <- key$Identifier
+
+DRIMSeqFilter()
+
+
