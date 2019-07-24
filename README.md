@@ -19,6 +19,9 @@ For details of the model, see (Give bioarxiv link)
 For examples of how to use the package, see the files contained within SampleCode within the package.  These files provide a pipeline to run the DTUCompReg method starting with a folder of Salmon quantifications.  Specifically:
 
 (1)DataProcessing.R shows how to import the non-inferential data into R and save initial files needed for further processing, including the tx2gene object that links a transcript to a gene<br>
+ <br>
 (2)SaveInfRepsAsRData.R gives example code to save the inferential replicate data by sample.  This data must be saved by sample because the data otherwise becomes too difficult to work with easily, especially as the number of samples increases.<br>
+ <br>
 (3)SaveNecessaryDatasets.R saves necessary temporary files that include information about inferential replicates and the GeneLevelFiles that contain all data needed to run the DTU compositional regressions<br>
+ <br>
 (4)RunCompositionalRegressions.R <br>
