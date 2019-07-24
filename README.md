@@ -16,13 +16,13 @@ library(DTUCompReg)
 For details of the model, see (Give bioarxiv link).
 
 ## Usage  
-For examples of how to use the package, see the files contained within SampleCode within the package.  These files provide a pipeline to run the DTUCompReg method starting with a folder of Salmon quantifications.  We recommend you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  Specifically:<br>
+For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the DTUCompReg method starting with a folder of Salmon quantifications.  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  Specifically:<br>
  <br>
 (1)DataProcessing.R gives example code to import the non-inferential data into R and save initial files needed for further processing, including the tx2gene object that links a transcript to a gene<br>
  <br>
 (2)SaveInfRepsAsRData.R gives example code to save the inferential replicate data by sample.  This data must be saved by sample because the data otherwise becomes too large to work with easily in R, especially as the number of biological samples/replicates becomes very high.  If no inferential replicates (ie bootstrap/Gibbs) samples are used, file (2) should be skipped.  <br>
  <br>
-(3)SaveNecessaryDatasetsForDTUCompReg.R gives example code to save necessary temporary files that include information about inferential replicates and the GeneLevelFiles that contain all data needed to run the DTU compositional regressions. If no inferential replicates (ie bootstrap/Gibbs) samples are used, useInferentialReplicates (3) should be set to FALSE. <br>
+(3)SaveNecessaryDatasetsForDTUCompReg.R gives example code to save necessary temporary files that include information about inferential replicates and the GeneLevelFiles that contain all data needed to run the DTU compositional regressions. If no inferential replicates (ie bootstrap/Gibbs samples) are used, useInferentialReplicates (3) should be set to FALSE. <br>
  <br>
 (4)RunCompositionalRegressions.R gives example code to run the DTU compositional regression analyses, both with and without incorporating the inferential replicates.  This includes the option to incorporate extra predictors other than condition. <br>
  <br>
