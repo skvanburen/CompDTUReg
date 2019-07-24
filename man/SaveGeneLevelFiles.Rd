@@ -4,7 +4,8 @@
 \alias{SaveGeneLevelFiles}
 \title{Save a file for each gene containing all information necessary to run DTUCompReg}
 \usage{
-SaveGeneLevelFiles(dir1, direc_to_save, DRIMSeqFiltering = TRUE)
+SaveGeneLevelFiles(dir1, direc_to_save, DRIMSeqFiltering = TRUE,
+  useInferentialReplicates = TRUE)
 }
 \arguments{
 \item{dir1}{is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}}
@@ -12,7 +13,9 @@ SaveGeneLevelFiles(dir1, direc_to_save, DRIMSeqFiltering = TRUE)
 \item{direc_to_save}{is the directory the gene level files will be saved to}
 
 \item{DRIMSeqFiltering}{is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-using the OtherGroups approach we considered and generally should not be used}
+using the OtherGroups approach we considered and generally should not be used.}
+
+\item{useInferentialReplicates}{is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise}
 }
 \description{
 Save a file for each gene containing all information necessary to run DTUCompReg
