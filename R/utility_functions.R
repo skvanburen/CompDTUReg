@@ -90,7 +90,7 @@ maketx2gene <- function(txdb_loc, save_loc = NULL){
 #' @param QuantSalmon is the Salmon quantification object output using tximport (see (1) for example code)
 #' @param clust An optional clust object of class parallel to parallelize within this function.  See \code{\link{makeCluster}} for more information.
 #' @param countsFromAbundance character corresponding the countsFromAbundance parameter used in \code{\link{tximport}} step
-#' @param GenAllGroupCombos is a TRUE/FALSE that generates all group combinations from key$Condition.  Only ever needed for certain power analyses, will almost always be set to FALSE.
+#' @param GenAllGroupCombos is a TRUE/FALSE indicator for generating all possible condition combinations from key$Condition.  Only ever needed for certain power analyses, will almost always be set to FALSE.
 #'
 #' @return \code{sumToGene} saves initial files from the quantification.  These files include lists of gene-specific expression estimates with and with "OtherGroups",
 #' which was a filtering alternative we considered in addition to filters built into \emph{DRIMSeq}.  abDatasets correspond to TPM abundances and cntDatasets correspond to counts that may be scaled relative to TPMs
@@ -1844,6 +1844,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp){
 #' @param DRIMSeqFiltering is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
 #' using the OtherGroups approach we considered and generally should not be used.
 #' @param direc_to_save is the directory the gene level files will be saved to
+#' @param useInferentialReplicates is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise
 #' @export SaveGeneLevelFiles
 SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE){
   setwd(dir1)
