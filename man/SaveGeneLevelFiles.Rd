@@ -2,7 +2,7 @@
 % Please edit documentation in R/utility_functions.R
 \name{SaveGeneLevelFiles}
 \alias{SaveGeneLevelFiles}
-\title{Save a file for each gene containing all information necessary to run DTUCompReg}
+\title{Save a file for each gene containing all information necessary to run CompDTUReg}
 \usage{
 SaveGeneLevelFiles(dir1, direc_to_save, DRIMSeqFiltering = TRUE,
   useInferentialReplicates = TRUE)
@@ -18,5 +18,5 @@ using the OtherGroups approach we considered and generally should not be used.}
 \item{useInferentialReplicates}{is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise}
 }
 \description{
-Save a file for each gene containing all information necessary to run DTUCompReg
+Save a file for each gene containing all information necessary to run CompDTUReg
 }
