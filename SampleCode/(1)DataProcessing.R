@@ -1,5 +1,5 @@
 #Data Processing Code
-library(DTUCompReg)
+library(CompDTUReg)
 
 #def_wd is the top level directory where files will be saved
 def_wd <- "~/res/SQCCDataReproduceOldResBeforeCommonCodeTest/"

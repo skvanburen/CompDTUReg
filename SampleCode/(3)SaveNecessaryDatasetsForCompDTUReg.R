@@ -1,7 +1,7 @@
 #Sleep statement can help performance if there alot of different files running at the same time via an array job
 #Sys.sleep(sample(1:100,1))
 
-library(DTUCompReg)
+library(CompDTUReg)
 
 #Specify number of biological replicates/samples
 nsamp <- 10
@@ -90,7 +90,7 @@ if(useInferentialReplicates==TRUE){
 
 }
 
-#Save the files that will be directly loaded to run DTUCompReg, with each gene having a separate file
+#Save the files that will be directly loaded to run CompDTUReg, with each gene having a separate file
   #If a file already exists for that gene, the function will skip resaving that one to save time
 SaveGeneLevelFiles(dir1 = dir1, direc_to_save = direc_to_save, useInferentialReplicates = useInferentialReplicates)
 

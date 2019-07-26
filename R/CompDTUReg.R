@@ -1,17 +1,17 @@
-startDTUCompReg <- function(x, runWithME, extraPredictors = NULL){
+startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 
   load(x)
   if(runWithME==TRUE){
-    res <- DTUCompReg(genename = genename, Y = Y, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
+    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       extraPredictors = extraPredictors)
   }else{
-    res <- DTUCompReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, extraPredictors = extraPredictors)
+    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, extraPredictors = extraPredictors)
   }
   return(res)
 }
 
 
-DTUCompReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
+CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
                        extraPredictors = NULL){
   if(length(unique(Group))!=length(levels(Group))){
     stop("Check the number of levels in the Group factor, there appear to be more levels than are used and this will result in incorrect inference.")

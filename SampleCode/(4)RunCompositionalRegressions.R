@@ -1,5 +1,5 @@
 #Code to run the compositional regression models for DTU
-library(DTUCompReg)
+library(CompDTUReg)
 
 #Specify the same directory where the gene level files to be used for the analysis were saved in (3)
 save_dir <- "/pine/scr/s/k/skvanbur/SQCCDataReproduceOldResBeforeCommonCodeTest/"
@@ -16,15 +16,15 @@ pred2 <- c(5,2,5,2,5,2,5,2,5,2)
   #being a predictor with the names pred1, pred2, as desired
 extraPredictors <- as.matrix(data.frame(pred1, pred2))
 
-#DTUCompReg is run separately for each gene, so easiest way to run is using lapply with the startDTUCompReg
+#CompDTUReg is run separately for each gene, so easiest way to run is using lapply with the startCompDTUReg
   #function
 #Condition variable is included automatically, and the returned pvalue will be the pvalue for the significance
   #test of condition (controlling for any extra predictors if included)
 
-CompResultsList <- lapply(GeneFiles, startDTUCompReg, runWithME = FALSE, extraPredictors = extraPredictors)
-CompMEResultsList <- lapply(GeneFiles, startDTUCompReg, runWithME = TRUE, extraPredictors = extraPredictors)
+CompDTUResultsList <- lapply(GeneFiles, startCompDTUReg, runWithME = FALSE, extraPredictors = extraPredictors)
+CompDTUmeResultsList <- lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, extraPredictors = extraPredictors)
 
 #Aggregate results from all genes into one data.table object
-CompResults <- rbindlist(CompResultsList)
-CompMEResults <- rbindlist(CompMEResultsList)
+CompDTUResults <- rbindlist(CompDTUResultsList)
+CompDTUmeResults <- rbindlist(CompDTUmeResultsList)
 

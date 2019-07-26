@@ -1839,7 +1839,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp){
 }
 
 
-#' Save a file for each gene containing all information necessary to run DTUCompReg
+#' Save a file for each gene containing all information necessary to run CompDTUReg
 #' @param dir1 is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}
 #' @param DRIMSeqFiltering is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
 #' using the OtherGroups approach we considered and generally should not be used.

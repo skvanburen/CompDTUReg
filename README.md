@@ -1,15 +1,15 @@
-# DTUCompReg
+# CompDTUReg
 
 ## Introduction
 
-<code>DTUCompReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in (Give bioarxiv link).
+<code>CompDTUReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in (Give bioarxiv link).
 
 ## Installation
 We recommend installing from Github for the latest version of the code:
 ```r
 install.packages("devtools")
-devtools::install_github("skvanburen/DTUCompReg")
-library(DTUCompReg)
+devtools::install_github("skvanburen/CompDTUReg")
+library(CompDTUReg)
 ```
 
 ## Model
@@ -22,7 +22,7 @@ For an example of how to use the package, see the files contained in the SampleC
  <br>
 (2)SaveInfRepsAsRData.R gives example code to save the inferential replicate data by sample.  This data must be saved by sample because the data otherwise becomes too large to work with easily in R, especially as the number of biological samples/replicates becomes very high.  If no inferential replicates (ie bootstrap/Gibbs) samples are used, file (2) should be skipped.  <br>
  <br>
-(3)SaveNecessaryDatasetsForDTUCompReg.R gives example code to save necessary temporary files that include information about inferential replicates and the GeneLevelFiles that contain all data needed to run the DTU compositional regressions. If no inferential replicates (ie bootstrap/Gibbs samples) are used, useInferentialReplicates (3) should be set to FALSE. <br>
+(3)SaveNecessaryDatasetsForCompDTUReg.R gives example code to save necessary temporary files that include information about inferential replicates and the GeneLevelFiles that contain all data needed to run the DTU compositional regressions. If no inferential replicates (ie bootstrap/Gibbs samples) are used, useInferentialReplicates (3) should be set to FALSE. <br>
  <br>
 (4)RunCompositionalRegressions.R gives example code to run the DTU compositional regression analyses, both with and without incorporating the inferential replicates.  This includes the option to incorporate extra predictors other than condition. <br>
  <br>

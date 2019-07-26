@@ -1,6 +1,6 @@
 #Save Inferential Replicates to R with one file per biological sample
 #These files will be saved within the outer
-library(DTUCompReg)
+library(CompDTUReg)
 
 #SalmonFilesDir is the directory where the Salmon quantification results are saved
 #and where the sample specific inferential replicates will be saved
