@@ -1,3 +1,14 @@
+
+# Starts the compositional DTU regression with or with bootstrap samples and return the results
+#'
+#'
+#' \code{startCompDTUReg} start the compositional DTU regression model corresponding to a specific gene-level file.
+#'
+#' \code{startCompDTUReg} runs the compositional DTU regression models.  This is a helper function to run \code{\link{CompDTUReg}} from gene level files originating
+#' from the file (4)RunCompositionalRegressions in the sample code for the package.
+#' @inheritParams CompDTUReg
+#' @param x The file path to a specific gene-level file
+#' @export startCompDTUReg
 startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 
   load(x)
@@ -10,7 +21,28 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
   return(res)
 }
 
-
+#' Implement the CompDTU and CompDTUme regression model
+#'
+#'
+#' \code{CompDTUReg} runs the CompDTU and CompDTUme regression models for a specific gene.
+#'
+#'
+#' @param genename The name of the current gene to run the method on.
+#' @param Y corresponds is the ilr transformed matrix of response values for the non-inferential replicate data.  Matrix
+#' should have a number of rows corresponding to the number of samples and a number of columns corresponding to the number of ilr coordinates
+#' (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model with measurement error, as it is not used.
+#' @param Group A vector of condition assignments corresponding to the samples
+#' @param runWithME is a T/F indicating whether the model should be run with measurement error or not (corresponding to CompDTU
+#' and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.
+#' @param YInfRep corresponds is the ilr transformed matrix of response values for the inferential replicate data.  Matrix
+#' should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
+#' (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.
+#' @param Group A vector of condition assignments corresponding to the samples
+#' @param  extraPredictors is an optional matrix of additional predictor values.  This should have one row per sample and one column per perdictor.
+#'
+#' @return a data.frame containing the gene_id being used, p-value for the CompDTU/CompDTUme, and various information on
+#' the current dataset being used
+#' @export CompDTUReg
 CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
                        extraPredictors = NULL){
   if(length(unique(Group))!=length(levels(Group))){
@@ -26,7 +58,7 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     # }
     if(is.null(YInfRep)){
       gene_id <- genename
-      ret <- data.frame(gene_id, pval_pillai_ME = NA,
+      ret <- data.frame(gene_id, pval_CompDTUme = NA,
                         MENullCovNegVar = NA, MEAltCovNegVar = NA,
                         numYs = NA,
                         nsamp = NA, ncond = NA, stringsAsFactors = F)
@@ -81,7 +113,7 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
       SigmaTildeNullNewModeling <- (crossprod(pie2))/ns
 
       gene_id <- genename
-      ret <- data.frame(gene_id, pval_pillai_ME = NA,
+      ret <- data.frame(gene_id, pval_CompDTUme = NA,
                         MENullCovNegVar = NA, MEAltCovNegVar = NA,
                         numYs = NA,
                         nsamp = NA, ncond = NA, stringsAsFactors = F)
@@ -111,15 +143,15 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
         #df_residual needs to be based on nsamp not nreps or nreps*nsamp (which is equal to nrow(YGibbs))
         if((statement1==TRUE | statement2==TRUE)){
-          ret$pval_pillai_ME <- NA
+          ret$pval_CompDTUme <- NA
         }else{
           qq <- ncond - 1
-          pval_pillai_ME <- tryCatch(calcPillaiPval(SigmaTildeNull = UpdatedCovNull, SigmaTildeAlt = UpdatedCovAlt,
-                                                                  res1 = NULL, q = qq, nsamp = nsamp, df_residual = nsamp - ncol(XAlt)),
+          pval_CompDTUme <- tryCatch(calcPillaiPval(SigmaTildeNull = UpdatedCovNull, SigmaTildeAlt = UpdatedCovAlt,
+                                                                  lm_model_fit = NULL, q = qq, nsamp = nsamp, df_residual = nsamp - ncol(XAlt)),
                                                    error = function(x){})
 
-          if(is.null(pval_pillai_ME)==FALSE){
-            ret$pval_pillai_ME <- pval_pillai_ME
+          if(is.null(pval_CompDTUme)==FALSE){
+            ret$pval_CompDTUme <- pval_CompDTUme
           }
 
 
@@ -148,7 +180,7 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     if(!is.null(extraPredictors)){
       XNull <- model.matrix(~1 + extraPredictors, data = Group2)
 
-      #Reassign column names to match colunm names of extraPredictors
+      #Reassign column names to match column names of extraPredictors
       colnames(XNull)[ncol(XNull):(ncol(XNull) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
 
       XNullT <- t(XNull)
@@ -166,7 +198,7 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
 
     gene_id <- genename
-    ret <- data.frame(gene_id, pval_pillai = NA,
+    ret <- data.frame(gene_id, pval_CompDTU = NA,
                       numYs = NA,
                       nsamp = NA, ncond = NA, stringsAsFactors = F)
     ret$numYs <- ncol(Y)
@@ -175,12 +207,12 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     ret$ncond <- ncond
 
     qq <- ncond - 1
-    pval_pillai <- tryCatch(calcPillaiPval(SigmaTildeNull = SigmaTildeNull, SigmaTildeAlt = SigmaTildeAlt,
-                                           res1 = NULL, q = qq, nsamp = nsamp, df_residual = nsamp - ncol(XAlt)),
+    pval_CompDTU <- tryCatch(calcPillaiPval(SigmaTildeNull = SigmaTildeNull, SigmaTildeAlt = SigmaTildeAlt,
+                                           lm_model_fit = NULL, q = qq, nsamp = nsamp, df_residual = nsamp - ncol(XAlt)),
                             error = function(x){})
 
-    if(is.null(pval_pillai)==FALSE){
-      ret$pval_pillai <- pval_pillai
+    if(is.null(pval_CompDTU)==FALSE){
+      ret$pval_CompDTU <- pval_CompDTU
     }
 
 
@@ -194,11 +226,23 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
 
 
-#q is df of condition variable
-#code has been verified compared to base R ANOVA results
-calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, res1 = NULL, q, nsamp, df_residual = NA){
-  if(is.null(res1) & is.na(df_residual)){
-    stop("df. residual must be specified to calcPillaiPval or else an lm object must specified in res1 to extract df.residual from")
+#' Calculate the Pillai pvalue for a categorical predictor (usually condition)
+#'
+#'
+#' \code{calcPillaiPval} calculate the Pillai pvalue for a categorical predictor
+#' @param SigmaTildeNull is the null covariance to be used
+#' @param SigmaTildeAlt is the alternative covariance to be used
+#' @param lm_model_fit is a lm object from the regression model if interest.  If specified it can be used to
+#' extract the degrees of freedom of the residual (df_residual) otherwise this must be specified
+#' @param q is degrees of freedom of the categorical predictor being tested in the current hypothesis test (usually condition).
+#' For example, with 2 condition levels q is 1, with 2 levels q is 2, etc
+#' @param nsamp is the number of samples used in the analysis. Note that this is the number of unique biological samples and is thus not
+#' a function of the number of inferential replicates used in an analysis.
+#' @param df_residual is the degrees of freedom of the residual. Can be extracted from the lm_model_fit object otherwise has to
+#' be specified.  Equal to the number of samples used minus the number of total coefficients fit by the model.
+calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, lm_model_fit = NULL, q, nsamp, df_residual = NA){
+  if(is.null(lm_model_fit) & is.na(df_residual)){
+    stop("df. residual must be specified to calcPillaiPval or else an lm object must specified in lm_model_fit to extract df.residual from")
   }
 
   Etilde <- nsamp * SigmaTildeAlt
@@ -209,13 +253,13 @@ calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, res1 = NULL, q, nsamp,
 
 
   #See the Multivariate ANOVA Testing pdf document (from the SAS help file) for the necessary formulas
-  #This proved to be the easiest way to calculate the statistic
-  #v <- nsamp - ncol(model.matrix(res1))
+  #This proved to be the easiest way to calculate the statistic and are confirmed to match R's anova.mlm function
+  #v <- nsamp - ncol(model.matrix(lm_model_fit))
 
   if(!is.na(df_residual)){
     v <- df_residual
   }else{
-    v <- res1$df.residual
+    v <- lm_model_fit$df.residual
   }
   #v is the error/residual df- also extract from the r anova fit
 
@@ -228,7 +272,7 @@ calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, res1 = NULL, q, nsamp,
   m <- 0.5 * (abs(p - q) - 1)
   n <- 0.5 * (v - p - 1)
 
-  #Formulas come from the SAS help file Multivariate ANOVA Testing
+  #Formulas come from the SAS help file Multivariate ANOVA Testing and are confirmed to match R's anova.mlm function
   piece1 <- 2*n + s + 1
   piece2 <- 2*m + s + 1
   fstat_pillai <- (piece1/piece2) * (pill_stat/(s - pill_stat))
