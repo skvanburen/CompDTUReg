@@ -57,7 +57,7 @@ if(countsFromAbundance=="scaledTPM" | countsFromAbundance=="lengthScaledTPM"){
 
 load(paste0(dir1,"tx2gene.RData"))
 load(paste0(dir1, "abDatasetsNoOtherGroupsFiltered.RData"))
-fullgenenames <- names(abDatasetsFiltered)
+filteredgenenames <- names(abDatasetsFiltered)
 
 
 #Specify directory where Salmon quantification files are saved

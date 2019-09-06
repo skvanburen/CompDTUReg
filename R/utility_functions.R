@@ -1387,26 +1387,29 @@ SaveFullinfRepDat <- function(DRIMSeqFiltering = TRUE){
   #(since using all of them at once would take up too much memory) and merge them all together
   #and then run generateData as done below
 
-  genestouse <- fullgenenames
+  genestouse <- filteredgenenames
 
   #Function to split character vector into n (approximately) equally sized chunks
   #Taken from https://stackoverflow.com/questions/3318333/split-a-vector-into-chunks-in-r
   #Originally by mathheadinclouds and edited by Dis Shishkov
   chunk2 <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE))
   genestouse_split <- chunk2(genestouse, nparts)
+
+  #Gene list for all genes included in cntGene, even if some of them only have 1 transcript or are filtered out, etc
+    #If passing cntGeneFiltered as the argument cntGene, this will be equivalent to only using the genes to be used in the compositional analysis
+      #Generally this will be the case
   all_genes_annotation_split <- chunk2(unique(sort(cntGene$gene_id)), nparts)
 
   #Gene list only for those genes that will be used in the compositional analysis
   curr_genes <- genestouse_split[[curr_part_num]]
 
-  #Gene list for all genes, even ones that only have 1 trans, etc
-  #Needed for the compositionalMI Power analysis to calculate updated TPMs, etc
+
   curr_genes_all_genes_annotation <- all_genes_annotation_split[[curr_part_num]]
 
 
   infRepFiles <- mixedsort(list.files(load_dir, pattern = ".RData", full.names = TRUE))
 
-  #Load the first sample to get the ngibbs/nboot value and assign that value fo ninfreps
+  #Load the first sample to get the ngibbs/nboot value and assign that value to ninfreps
   d <- loadRData(infRepFiles[1])
   if(GibbsSamps==TRUE){
     ninfreps <- attr(d, "ngibbs")
