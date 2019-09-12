@@ -791,6 +791,38 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
     notrarecolnames <- NULL
   }
 
+
+
+  if(useOtherGroups==TRUE & useExistingOtherGroups==FALSE){
+    #Combine all transcripts with RTA across all samples less than 5% into an "Other" category if there is more than 1
+    #If there is exactly 1 trans with RTA < 5%, just drop it for now
+    fullcolnames <- colnames(d2)
+
+    #Col #s that have RTA < 5% after summing across all samples- not the same as RTA quantity, which is calculted per sample
+    rarecols <- which(colSums(d2)/sum(d2) < 0.05)
+    rarecolnames <- colnames(d2)[rarecols]
+
+    #Need to generate like this and not just -rarecols because there could be no rarecols
+    # and code would break in that case
+    notrarecolnames <- colnames(d2)[!(colnames(d2) %in% rarecolnames)]
+  }else if(useOtherGroups==TRUE & useExistingOtherGroups==TRUE){
+    fullcolnames <- attr(abCompDatasets[[x]], "FullTrans")
+    rarecolnames <- attr(abCompDatasets[[x]], "OtherTrans")
+    #rarecols <- which(colnames(d2) %in% attr(abCompDatasets[[x]], "OtherTrans"))
+    rarecols <- attr(abCompDatasets[[x]], "OtherTrans")
+    notrarecolnames <- attr(abCompDatasets[[x]], "NotOtherTrans")
+  }else if(useOtherGroups==FALSE & is.null(abCompDatasets)){
+    fullcolnames <- colnames(d2)
+    rarecolnames <- NULL
+    rarecols <- NULL
+    notrarecolnames <- colnames(d2)
+  }else if(useOtherGroups==FALSE & !is.null(abCompDatasets)){
+    fullcolnames <- attr(abCompDatasets[[x]], "FullTrans")
+    rarecolnames <- NULL
+    rarecols <- NULL
+    notrarecolnames <- NULL
+  }
+
   #If length of tnames is not the same as length(union(rarecolnames, notrarecolnames)),
   #there is a transcript that is not a member of the other groups
   #that is also not in the gibbs replicates.  This will cause a problem when trying
@@ -1069,7 +1101,7 @@ DRIMSeqFilter <- function(failedinfRepsamps = NULL){
 
   #abDatasets are only input to extract existing MajorTrans information from
   FilteredDat <- sumToGeneHelper(abundance = abundance, counts = counts, lengths = lengths, tx2gene = tx2gene, Group = Group, clust = NULL, nsamp = length(Group),
-                                 key = key, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, useExistingMajorTrans = TRUE, abCompDatasets = abDatasets)
+                                 key = key, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, useExistingMajorTrans = FALSE, abCompDatasets = NULL)
 
 
   abDatasetsFiltered <- FilteredDat$abDatasets
@@ -1235,7 +1267,7 @@ SaveInfRepDataAsRData <- function(curr_samp, curr_file_loc, GibbsSamps = FALSE, 
     if(!dir.exists(save_dir)){
       dir.create(save_dir)
     }
-    save(list = c(nam, "SaveInfRepsAsRCompTime"), file = paste0(save_dir, "GibbsSamps", curr_samp, ".RData" ))
+    save(list = c(nam, "SaveInfRepsAsRCompTime", countsFromAbundance), file = paste0(save_dir, "GibbsSamps", curr_samp, ".RData" ))
   }else{
     if(is.null(direc_to_save_res)){
       save_dir <- paste0(getwd(), "BootSamps/")
@@ -1252,7 +1284,7 @@ SaveInfRepDataAsRData <- function(curr_samp, curr_file_loc, GibbsSamps = FALSE, 
     if(!dir.exists(save_dir)){
       dir.create(save_dir)
     }
-    save(list = c(nam, "SaveInfRepsAsRCompTime"), file = paste0(save_dir, "BootSamps", curr_samp, ".RData" ))
+    save(list = c(nam, "SaveInfRepsAsRCompTime", countsFromAbundance), file = paste0(save_dir, "BootSamps", curr_samp, ".RData" ))
   }
 }
 
