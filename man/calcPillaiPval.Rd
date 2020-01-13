@@ -4,8 +4,14 @@
 \alias{calcPillaiPval}
 \title{Calculate the Pillai pvalue for a categorical predictor (usually condition)}
 \usage{
-calcPillaiPval(SigmaTildeNull, SigmaTildeAlt, lm_model_fit = NULL, q, nsamp,
-  df_residual = NA)
+calcPillaiPval(
+  SigmaTildeNull,
+  SigmaTildeAlt,
+  lm_model_fit = NULL,
+  q,
+  nsamp,
+  df_residual = NA
+)
 }
 \arguments{
 \item{SigmaTildeNull}{is the null covariance to be used}

@@ -4,10 +4,21 @@
 \alias{generateData}
 \title{Generate a list of dataframes with TPM data by Gene}
 \usage{
-generateData(x, dat, nsamp, abundance, abData, abCompDatasets = NULL,
-  useExistingOtherGroups, useOtherGroups = FALSE,
-  useExistingMajorTrans = TRUE, infReps = "none", ninfreps = NA,
-  samps = NULL, CompMI = FALSE)
+generateData(
+  x,
+  dat,
+  nsamp,
+  abundance,
+  abData,
+  abCompDatasets = NULL,
+  useExistingOtherGroups,
+  useOtherGroups = FALSE,
+  useExistingMajorTrans = TRUE,
+  infReps = "none",
+  ninfreps = NA,
+  samps = NULL,
+  CompMI = FALSE
+)
 }
 \arguments{
 \item{x}{is a genename of interest.  Genes that have <2 transcripts or have total expression across all samples of 0 are filtered out before calling this function since they can never by used for any kind of DTU analysis}

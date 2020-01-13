@@ -4,8 +4,16 @@
 \alias{prepareData}
 \title{Prepare raw adbundance/count/length data for later analysis}
 \usage{
-prepareData(abundance, counts, lengths, tx2gene, nsamp, key = NULL,
-  infReps = "none", samps = NULL)
+prepareData(
+  abundance,
+  counts,
+  lengths,
+  tx2gene,
+  nsamp,
+  key = NULL,
+  infReps = "none",
+  samps = NULL
+)
 }
 \arguments{
 \item{abundance}{is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level quantification estimates.  Column names should not include "TPM".}

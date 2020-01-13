@@ -4,8 +4,13 @@
 \alias{SaveInfRepDataAsRData}
 \title{Save the infRep data for all genes across each unique biological sample/replicate.}
 \usage{
-SaveInfRepDataAsRData(curr_samp, curr_file_loc, GibbsSamps = FALSE,
-  countsFromAbundance = "no", direc_to_save_res = NULL)
+SaveInfRepDataAsRData(
+  curr_samp,
+  curr_file_loc,
+  GibbsSamps = FALSE,
+  countsFromAbundance = "no",
+  direc_to_save_res = NULL
+)
 }
 \arguments{
 \item{curr_samp}{Gives the current sample number in the form of "Sample1", "Sample2", etc.  Used in conjunction with key$Identifier, so needs to be "Sample1", "Sample2", etc

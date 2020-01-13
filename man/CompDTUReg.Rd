@@ -4,8 +4,15 @@
 \alias{CompDTUReg}
 \title{Implement the CompDTU and CompDTUme regression model}
 \usage{
-CompDTUReg(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL,
-  mean.withinhat = NULL, extraPredictors = NULL)
+CompDTUReg(
+  genename,
+  Y = NULL,
+  Group,
+  runWithME = TRUE,
+  YInfRep = NULL,
+  mean.withinhat = NULL,
+  extraPredictors = NULL
+)
 }
 \arguments{
 \item{genename}{The name of the current gene to run the method on.}
@@ -24,8 +31,6 @@ should have a number of rows corresponding to the number of samples times the nu
 (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.}
 
 \item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per perdictor.}
-
-\item{Group}{A vector of condition assignments corresponding to the samples}
 }
 \value{
 a data.frame containing the gene_id being used, p-value for the CompDTU/CompDTUme, and various information on

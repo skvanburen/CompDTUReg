@@ -4,8 +4,13 @@
 \alias{addMajorTrans}
 \title{Add Major Trans Info to Existing abundance and count dataframes}
 \usage{
-addMajorTrans(genestouse, abGeneTempF, cntGeneTempF, abDatasets,
-  CompMI = FALSE)
+addMajorTrans(
+  genestouse,
+  abGeneTempF,
+  cntGeneTempF,
+  abDatasets,
+  CompMI = FALSE
+)
 }
 \arguments{
 \item{genestouse}{A list of genenames that are in use for the compositional analysis.}

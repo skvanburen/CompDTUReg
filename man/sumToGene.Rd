@@ -4,8 +4,14 @@
 \alias{sumToGene}
 \title{Summarize the non-inferential rep data from Salmon to gene level (see details)}
 \usage{
-sumToGene(QuantSalmon, key, tx2gene, clust = NULL, countsFromAbundance,
-  GenAllGroupCombos = FALSE)
+sumToGene(
+  QuantSalmon,
+  key,
+  tx2gene,
+  clust = NULL,
+  countsFromAbundance,
+  GenAllGroupCombos = FALSE
+)
 }
 \arguments{
 \item{QuantSalmon}{is the Salmon quantification object output using tximport (see (1) for example code)}

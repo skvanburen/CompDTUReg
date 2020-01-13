@@ -4,8 +4,12 @@
 \alias{SaveGeneLevelFiles}
 \title{Save a file for each gene containing all information necessary to run CompDTUReg}
 \usage{
-SaveGeneLevelFiles(dir1, direc_to_save, DRIMSeqFiltering = TRUE,
-  useInferentialReplicates = TRUE)
+SaveGeneLevelFiles(
+  dir1,
+  direc_to_save,
+  DRIMSeqFiltering = TRUE,
+  useInferentialReplicates = TRUE
+)
 }
 \arguments{
 \item{dir1}{is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}}

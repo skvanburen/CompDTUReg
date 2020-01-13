@@ -1881,7 +1881,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp){
 #' @param direc_to_save is the directory the gene level files will be saved to
 #' @param useInferentialReplicates is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise
 #' @export SaveGeneLevelFiles
-SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE){
+SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE, CorrectLowExpression = TRUE, CorrectLowExpressionParam = 0.01){
   setwd(dir1)
 
 
@@ -1950,7 +1950,7 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
     abDatasetsToUse <- abDatasets[curr_gene]
     if(useInferentialReplicates==TRUE){
       ilrMeansCovs <- ilrMeansCovsSub[curr_gene]
-      newAbDatasetsGibbsFinal <- newAbDatasetsinfRepsFinalSub[curr_gene]
+      newAbDatasetsInfRepsFinal <- newAbDatasetsinfRepsFinalSub[curr_gene]
     }
 
 
@@ -1962,7 +1962,12 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
       next
     }
 
-    Y <- unclass(ilr(ccomp(abDatasetsToUse[[1]], total = 1)))
+    if(CorrectLowExpression==TRUE){
+      Y <- unclass(ilr(ccomp(CorrectLowExpression(abDatasetsToUse[[1]], CorrectLowExpressionParam), total = 1)))
+    }else{
+      Y <- unclass(ilr(ccomp(abDatasetsToUse[[1]], total = 1)))
+    }
+
 
     #Remove "TPM" from rownames of Y if it is still present, as these no longer correspond to TPMs
     rownames(Y) <- strsplit(rownames(Y), "TPM")
@@ -1989,12 +1994,18 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
 
       GibbsCovsToUse <- ilrCovsToUse
 
-      if(is.null(newAbDatasetsGibbsFinal)){
+      if(is.null(newAbDatasetsInfRepsFinal)){
         YInfRep <- NULL
-      }else if(ncol(newAbDatasetsGibbsFinal[[1]])==1){
+      }else if(ncol(newAbDatasetsInfRepsFinal[[1]])==1){
         YInfRep <- NULL
       }else{
-        YInfRep <- unclass(ilr(ccomp(newAbDatasetsGibbsFinal[[1]], total = 1)))
+
+        if(CorrectLowExpression = TRUE){
+          YInfRep <- unclass(ilr(ccomp(CorrectLowExpression(newAbDatasetsInfRepsFinal[[1]], CorrectLowExpressionParam), total = 1)))
+        }else{
+          YInfRep <- unclass(ilr(ccomp(newAbDatasetsInfRepsFinal[[1]], total = 1)))
+        }
+
         rownames(YInfRep) <- lapply(strsplit(rownames(YInfRep), "TPM"), FUN = function(x){paste0(x[1], x[2])})
       }
 
@@ -2018,7 +2029,7 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
       rm(abDatasetsToUse)
       rm(GibbsCovsToUse)
       rm(ilrMeansCovs)
-      rm(newAbDatasetsGibbsFinal)
+      rm(newAbDatasetsInfRepsFinal)
       rm(Y)
       rm(mean.withinhat)
       rm(YInfRep)
@@ -2034,3 +2045,52 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
 
   }
 }
+
+
+#' Correct sample/gene combinations that have expression values of 0 or close to 0 to stabilize results
+#' @param y is the data for the current gene/sample combination
+#' @param a is the parameter that controls the correction threshold (see details)
+#' @details The parameter a works as follows: any TPM value that is less than `a' percent of the total gene-level
+#' expression for the sample is replaced by `a' percent of this expression.  Mathematically, let \eqn{T_{ij}} be the TPM value for
+#' transcript $j=1,..., D$ for sample $i = 1,..., n$ within a given gene with $D$ transcripts.  Any \deqn{T_{ij} < a * (T_{i1}+...+T_{iD})} will be replaced by \deqn{a * (T_{i1}+...+T_{iD})}
+#'  This procedure results in relative transcript abundance fractions (RTAFs)
+#' being zero only when every \eqn{T_{ij}} is equal to zero.  The value \eqn{a} can be increased or decreased to result in more or less modification to
+#' the observed TPM values.  As $a$ increases, the proportions are driven closer to each other, with each converging towards \eqn{(1/D)} as \eqn{a}converges to 1
+#' (and each equal to \eqn{(1/D)} for \eqn{a > 1}).  We find \deqn{a=0.01} is a good compromise that is large enough to stabilize the ilr coordinates sufficiently while
+#' additionally not over-modifying the observed data, and use this value for all \emph{CompDTU} and \emph{CompDTUme} results.
+#' @export CorrectLowExpression
+CorrectLowExpression <- function(y, a = 0.01){
+  if(is.null(y)){
+    return(NULL)
+  }
+
+  if(ncol(y)==1){
+    y[y==0] <- a
+    return(y)
+  }else{
+    curr_dat <- y
+
+    lowExp_corrected_dat <- t(apply(curr_dat, 1, CorrectLowExpressionHelper, a = a))
+    return(lowExp_corrected_dat)
+  }
+
+
+}
+
+CorrectLowExpressionHelper <- function(x, a = 0.01){
+  #print(x)
+  # if(nrow(x)!=1){
+  #   stop("Number of rows is not 1")
+  # }
+  curr_rowSum <- sum(x)
+  if(is.na(curr_rowSum)){
+    return(x)
+  }else if(curr_rowSum==0){
+    return(x)
+  }else{
+    curr_dat2 <- x
+    curr_dat2[curr_dat2 < a*curr_rowSum] <- a*curr_rowSum
+    return(curr_dat2)
+  }
+}
+
