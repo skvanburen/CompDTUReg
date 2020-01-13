@@ -2,14 +2,27 @@
 % Please edit documentation in R/utility_functions.R
 \name{SaveWithinSubjCovMatrices}
 \alias{SaveWithinSubjCovMatrices}
-\title{Save the ilr-transformed within subject covariance matricies for the analysis}
+\title{Save the ilr-transformed within subject covariance matricies needed for a \emph{CompDTUme} analysis}
 \usage{
-SaveWithinSubjCovMatrices(DRIMSeqFiltering = TRUE)
+SaveWithinSubjCovMatrices(
+  GibbsSamps,
+  curr_part_num,
+  nsamp,
+  DRIMSeqFiltering = TRUE
+)
 }
 \arguments{
-\item{DRIMSeqFiltering}{is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-using the OtherGroups approach we considered and generally should not be used}
+\item{GibbsSamps}{is TRUE/FALSE specifying whether Gibbs samples of bootstrap samples are being used}
+
+\item{curr_part_num}{is the current part number that is being run.  See the example in the sample code  (3)SaveNecessaryDatasetsForCompDTUReg.R}
+
+\item{nsamp}{is the number of biological samples/replicates used in the analysis}
+
+\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Should be set to TRUE.}
 }
 \description{
-Save the ilr-transformed within subject covariance matricies for the analysis
+Save the ilr-transformed within subject covariance matricies needed for a \emph{CompDTUme} analysis
+}
+\details{
+This function is used to save the necessary within subject covariance matrices. See the file (3)SaveNecessaryDatasetsForCompDTUReg.R for example code to work with this function.
 }

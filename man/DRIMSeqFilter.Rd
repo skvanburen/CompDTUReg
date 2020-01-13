@@ -5,11 +5,43 @@
 \title{Filter data using filtering procedure built into \emph{DRIMSeq} via the \code{\link{dmFilter}} function.  Will automatically save
 the filtered versions of the various datasets described in \code{\link{sumToGene}}}
 \usage{
-DRIMSeqFilter(failedinfRepsamps = NULL)
+DRIMSeqFilter(
+  cntGene,
+  key,
+  min_samps_feature_expr,
+  min_feature_expr,
+  min_samps_feature_prop,
+  min_feature_prop,
+  min_samps_gene_expr,
+  min_gene_expr,
+  sampstouse = NULL,
+  failedinfRepsamps = NULL
+)
 }
 \arguments{
-\item{failedinfRepsamps}{is an optional parameters that gives names of samples that had the infRep sampler fail.
-This should not be needed, as newer versions of Salmon don't seem to have this issue.}
+\item{cntGene}{is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}}
+
+\item{key}{is a data.frame with columns "Sample" (corresponding to te unique bioogical identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
+and "Identifier", which should just be "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
+the observations don't correspond to unique biological samples.}
+
+\item{min_samps_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed}
+
+\item{min_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal feature expression.}
+
+\item{min_samps_feature_prop}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed.}
+
+\item{min_feature_prop}{From \code{\link{dmFilter}} documentation: Minimal proportion for feature expression. This value should be between 0 and 1.}
+
+\item{min_samps_gene_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where genes should be expressed.}
+
+\item{min_gene_expr}{From \code{\link{dmFilter}} documentation: Minimal gene expression.}
+
+\item{sampstouse}{is a vector of sample names (in the form of "Sample1", "Sample2", etc) to be used in the analysis.
+This argument should be used is you only wanted to run a subset of all sample ID's from key$Identifier.}
+
+\item{failedinfRepsamps}{is an optional parameter that gives names of samples ((in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
+This should not be needed, as newer versions of Salmon don't seem to have this issue but is left for backward compatability.}
 }
 \description{
 Filter data using filtering procedure built into \emph{DRIMSeq} via the \code{\link{dmFilter}} function.  Will automatically save

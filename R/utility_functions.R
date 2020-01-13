@@ -1042,14 +1042,25 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
 
 
 
-#This function filters like DRIMSeq and saves the results
+#Filter functions using procedure from \emph{DRIMSeq}
 #' Filter data using filtering procedure built into \emph{DRIMSeq} via the \code{\link{dmFilter}} function.  Will automatically save
 #' the filtered versions of the various datasets described in \code{\link{sumToGene}}
-#' @param failedinfRepsamps is an optional parameters that gives names of samples that had the infRep sampler fail.
-#' This should not be needed, as newer versions of Salmon don't seem to have this issue.
+#' @param cntGene is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}
+#' @inheritParams prepareData
+#' @param min_samps_feature_expr From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed
+#' @param min_feature_expr From \code{\link{dmFilter}} documentation: Minimal feature expression.
+#' @param min_samps_feature_prop From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed.
+#' @param min_feature_prop From \code{\link{dmFilter}} documentation: Minimal proportion for feature expression. This value should be between 0 and 1.
+#' @param min_samps_gene_expr From \code{\link{dmFilter}} documentation: Minimal number of samples where genes should be expressed.
+#' @param min_gene_expr From \code{\link{dmFilter}} documentation: Minimal gene expression.
+#' @param sampstouse is a vector of sample names (in the form of "Sample1", "Sample2", etc) to be used in the analysis.
+#' This argument should be used is you only wanted to run a subset of all sample ID's from key$Identifier.
+#' @param failedinfRepsamps is an optional parameter that gives names of samples ((in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
+#' This should not be needed, as newer versions of Salmon don't seem to have this issue but is left for backward compatability.
 #'
 #' @export DRIMSeqFilter
-DRIMSeqFilter <- function(failedinfRepsamps = NULL){
+DRIMSeqFilter <- function(cntGene, key, min_samps_feature_expr, min_feature_expr, min_samps_feature_prop,
+                          min_feature_prop, min_samps_gene_expr, min_gene_expr, sampstouse = NULL, failedinfRepsamps = NULL){
 
   temp1 <- PreDRIMSeq(cntGene = cntGene, failedinfRepsamps = failedinfRepsamps, key = key)
   cnts <- temp1$cnts
@@ -1394,8 +1405,19 @@ cntsToTPM <- function(cnts, nsamp, len = NULL, samps = NULL){
 
 
 
-#' @export
-SaveFullinfRepDat <- function(DRIMSeqFiltering = TRUE){
+#' Save the datasets that contain data across all inferential replicates and samples for a particular subset of genes
+#' @inheritParams SaveInfRepDataAsRData
+#' @inheritParams DRIMSeqFilter
+#' @inheritParams prepareData
+#' @param SalmonFilesDir is the directory the Salmon quantification results are saved in
+#' @param save_dir is the directory to save the datasets.  Datasets can get quite large so choose a directory with plenty of free space.
+#' @param GibbsSamps is TRUE if the inferential replicates are Gibbs samples and FALSE is the replicates are bootstrap samples
+#' @param filteredgenenames is a character vector of all genenames that pass filtering
+#' @param curr_part_num is the current part number that is being run.  See the example in the sample code  (3)SaveNecessaryDatasetsForCompDTUReg.R
+#' @param DRIMSeqFiltering is TRUE if DRIMSeq's filtering method is used.  Should be set to TRUE.
+#' @details This function is used to save the necessary inferential replicate datasets. See the file (3)SaveNecessaryDatasetsForCompDTUReg.R for example code to work with this function.
+#' @export SaveFullinfRepDat
+SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgenenames, cntGene, key, curr_part_num, DRIMSeqFiltering = TRUE){
 
   startTime <- proc.time()
 
@@ -1405,10 +1427,10 @@ SaveFullinfRepDat <- function(DRIMSeqFiltering = TRUE){
   sd3 <- "infRepsFullinfRepDat/"
 
   if(GibbsSamps==TRUE){
-    load_dir <- paste0(def_wd1, "GibbsSamps")
+    load_dir <- paste0(SalmonFilesDir, "GibbsSamps")
     infReps <- "Gibbs"
   }else{
-    load_dir <- paste0(def_wd1, "BootSamps")
+    load_dir <- paste0(SalmonFilesDir, "BootSamps")
     infReps <- "Boot"
   }
 
@@ -1675,16 +1697,24 @@ loadRData <- function(fileName){
 }
 
 
-#' Save the ilr-transformed within subject covariance matricies for the analysis
-#' @param DRIMSeqFiltering is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-#' using the OtherGroups approach we considered and generally should not be used
+#' Save the ilr-transformed within subject covariance matricies needed for a \emph{CompDTUme} analysis
+#' @inheritParams SaveInfRepDataAsRData
+#' @inheritParams SaveFullinfRepDat
+#' @inheritParams prepareData
+#' @details This function is used to save the necessary within subject covariance matrices. See the file (3)SaveNecessaryDatasetsForCompDTUReg.R for example code to work with this function.
 #' @export SaveWithinSubjCovMatrices
-SaveWithinSubjCovMatrices <- function(DRIMSeqFiltering = TRUE){
+SaveWithinSubjCovMatrices <- function(GibbsSamps, curr_part_num, nsamp, DRIMSeqFiltering = TRUE){
   #Directory where the infRepabDatasets are saved by SaveFullinfRepDat
   abDatasetsSubDir <- "infRepsabDatasets/"
 
   #Directory to save the within subject covariance matrices
   ilrMeansCovsSubDir <- "ilrMeansCovs/"
+
+  if(GibbsSamps==TRUE){
+    dirpiece <- "Gibbs"
+  }else{
+    dirpiece <- "Boot"
+  }
 
   if(DRIMSeqFiltering==FALSE){
     load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
@@ -1875,13 +1905,15 @@ calcIlrMeansCovs <- function(x, dat, nsamp){
 
 
 #' Save a file for each gene containing all information necessary to run CompDTUReg
+#' @inheritParams SaveInfRepDataAsRData
 #' @param dir1 is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}
 #' @param DRIMSeqFiltering is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
 #' using the OtherGroups approach we considered and generally should not be used.
-#' @param direc_to_save is the directory the gene level files will be saved to
+#' @param GeneLevelFilesSaveDir is the directory the gene level files will be saved to
 #' @param useInferentialReplicates is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise
 #' @export SaveGeneLevelFiles
-SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE, CorrectLowExpression = TRUE, CorrectLowExpressionParam = 0.01){
+SaveGeneLevelFiles <- function(dir1, GeneLevelFilesSaveDir, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE,
+                               CorrectLowExpression = TRUE, CorrectLowExpressionParam = 0.01, GibbsSamps){
   setwd(dir1)
 
 
@@ -1907,6 +1939,12 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
   sampstouse <- key$Identifier
 
   genestouse <- names(abDatasets)
+
+  if(GibbsSamps==TRUE){
+    dirpiece <- "Gibbs"
+  }else{
+    dirpiece <- "Boot"
+  }
 
   if(useInferentialReplicates==TRUE){
     abDatasetsSubDir <- "infRepsabDatasets/"
@@ -1941,7 +1979,7 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
       print(paste0("Currently saving files for gene number ", j, " out of ", numg))
     }
 
-    if(file.exists(file = paste0(direc_to_save, curr_gene, ".RData"))){next}
+    if(file.exists(file = paste0(GeneLevelFilesSaveDir, curr_gene, ".RData"))){next}
 
     if(!(curr_gene %in% genestouse)){
       next
@@ -2000,7 +2038,7 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
         YInfRep <- NULL
       }else{
 
-        if(CorrectLowExpression = TRUE){
+        if(CorrectLowExpression == TRUE){
           YInfRep <- unclass(ilr(ccomp(CorrectLowExpression(newAbDatasetsInfRepsFinal[[1]], CorrectLowExpressionParam), total = 1)))
         }else{
           YInfRep <- unclass(ilr(ccomp(newAbDatasetsInfRepsFinal[[1]], total = 1)))
@@ -2025,7 +2063,7 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
     genename <- curr_gene
 
     if(useInferentialReplicates==TRUE){
-      save(key, Group, Y, samps, mean.withinhat, YInfRep, genename, file = paste0(direc_to_save, curr_gene, ".RData"))
+      save(key, Group, Y, samps, mean.withinhat, YInfRep, genename, file = paste0(GeneLevelFilesSaveDir, curr_gene, ".RData"))
       rm(abDatasetsToUse)
       rm(GibbsCovsToUse)
       rm(ilrMeansCovs)
@@ -2036,7 +2074,7 @@ SaveGeneLevelFiles <- function(dir1, direc_to_save, DRIMSeqFiltering = TRUE, use
       rm(genename)
       gc()
     }else{
-      save(key, Group, Y, samps, genename, file = paste0(direc_to_save, curr_gene, ".RData"))
+      save(key, Group, Y, samps, genename, file = paste0(GeneLevelFilesSaveDir, curr_gene, ".RData"))
       rm(abDatasetsToUse)
       rm(Y)
       rm(genename)

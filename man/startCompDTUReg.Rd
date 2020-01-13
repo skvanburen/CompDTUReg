@@ -12,7 +12,7 @@ startCompDTUReg(x, runWithME, extraPredictors = NULL)
 \item{runWithME}{is a T/F indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.}
 
-\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per perdictor.}
+\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.}
 }
 \description{
 \code{startCompDTUReg} runs the compositional DTU regression models.  This is a helper function to run \code{\link{CompDTUReg}} from gene level files originating

@@ -30,7 +30,7 @@ and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-
 should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
 (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.}
 
-\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per perdictor.}
+\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.}
 }
 \value{
 a data.frame containing the gene_id being used, p-value for the CompDTU/CompDTUme, and various information on

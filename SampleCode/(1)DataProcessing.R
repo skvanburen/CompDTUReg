@@ -53,6 +53,8 @@ names(QuantFiles) <- paste0("Sample", 1:length(QuantFiles))
 
 #Create key matrix that contains matches samples to conditions and identifiers
 #Code later will be expecting key to have columns "Sample", "Condition", and "Identifier"
+#"Sample" has a unique identifier for the particular sample/replicate
+#"Condition" is a factor variable that corresponds to the different groups/conditions to conduct DTU analysis on
 #With "Identifier" containing names as "Sample1", "Sample2", etc even if data isn't corresponding to unique biological samples
   #because this is how future code will expect key to be constructed
 key <- matrix(c("SRR950078", "A",
@@ -66,22 +68,20 @@ key <- matrix(c("SRR950078", "A",
                 "SRR950085", "B",
                 "SRR950087", "B"), nrow = 10, ncol = 2, byrow = TRUE)
 key <- as.data.frame(key, stringsAsFactors = FALSE)
-key[3] <- paste0("Sample",1:nrow(key))
+key[3] <- paste0("Sample", 1:nrow(key))
 colnames(key) <- c("Sample", "Condition", "Identifier")
 key$Condition <- relevel(as.factor(key$Condition), ref = 1)
 
-#key$Identifier has to be "Sample1", "Sample2", etc even if these don't correspond to unique samples because that is
-  #how the code will expect it
-
-#key$Condition needs contain information corresponding to the condition
 
 
+#Use tximport to load in the results that have been pre-quantified by salmon
+  #Drop inferential replicates for now, as they will be read in in file (2)
 QuantSalmon <- tximport(QuantFiles, type = "salmon", txOut = TRUE, ignoreTxVersion = FALSE,
-                        countsFromAbundance = countsFromAbundance, dropInfReps = T)
+                        countsFromAbundance = countsFromAbundance, dropInfReps = TRUE)
 fulltransnames <- rownames(QuantSalmon$abundance) #transcript names
 
 
-
+#Save the tximport object that contains the results of the salmon quantification as an r quantification
 save(QuantSalmon, QuantFiles, key, fulltransnames, countsFromAbundance,
       file = paste0(SalmonFilesDir, "SalmonData.RData"))
 
@@ -98,10 +98,13 @@ sumToGene(QuantSalmon = QuantSalmon, tx2gene = tx2gene, clust = clust, key = key
 
 ##################################################################
 #Filter Genes using DRIMSeq's Filtering Approach
+#See DRIMSeq Paper for more information
 ##################################################################
+#Load dataframe that contains quantification results for each transcript(rows) and sample (column) along with other information
 load("abGene.RData")
 
-#Need to load the abDatasets file to extract existing MajorTrans info
+#Load list of dataframes that separates data by gene, with element in the list being a data frame of expression for that gene
+  #Within this data frame, rows are samples and columns are transcripts
 load("abDatasets.RData")
 
 
@@ -136,9 +139,12 @@ min_feature_prop <- 0.10
 min_samps_gene_expr <- n
 min_gene_expr <- 10
 
-
+#Set the list of samples to use to determine which genes/transcripts pass filtering based on
+  #Set to a character vector in the form of key$Identifier, for example ("Sample1", "Sample5", etc)
 sampstouse <- key$Identifier
 
-DRIMSeqFilter()
+DRIMSeqFilter(cntGene = cntGene, key = key, min_samps_feature_expr = min_samps_feature_expr, min_feature_expr = min_feature_expr,
+              min_samps_feature_prop = min_samps_feature_prop, min_feature_prop = min_feature_prop, min_samps_gene_expr = min_samps_gene_expr
+              min_gene_expr = min_gene_expr, sampstouse = sampstouse)
 
 

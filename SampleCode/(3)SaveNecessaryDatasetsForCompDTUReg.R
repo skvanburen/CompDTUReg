@@ -25,8 +25,7 @@ useInferentialReplicates <- TRUE
 if(useInferentialReplicates==TRUE){
 
   #Directory where the full inferential replicate datasets and gene level files will be saved
-  #These files can get quite large, so it is a good idea to specify a temporary
-  #directory with plenty of extra storage space
+  #These files can get quite large, so it is a good idea to specify a directory with plenty of extra storage space
   save_dir <- "/pine/scr/s/k/skvanbur/SQCCDataReproduceOldResBeforeCommonCodeTest/"
   if(!dir.exists(save_dir)){
     dir.create(save_dir)
@@ -36,8 +35,8 @@ if(useInferentialReplicates==TRUE){
 
 
 #Directory where the gene level files to be used for the analysis will be saved
-direc_to_save <- paste0(save_dir, "GeneLevelFiles/")
-if(!dir.exists(direc_to_save)){dir.create(direc_to_save, recursive = T)}
+GeneLevelFilesSaveDir <- paste0(save_dir, "GeneLevelFiles/")
+if(!dir.exists(GeneLevelFilesSaveDir)){dir.create(GeneLevelFilesSaveDir, recursive = T)}
 
 
 #Set countsFromAbundance value to match whatever was used previously
@@ -61,6 +60,7 @@ filteredgenenames <- names(abDatasetsFiltered)
 
 
 #Specify directory where Salmon quantification files are saved
+  #should match the same argument from (2)
 SalmonFilesDir <- "~/res/SQCCDataReproduceOldResBeforeCommonCode/SalmonReproduceResBeforeCommonCodeBootSamps/"
 
 #Load Salmon quantification object imported into R format using tximport in (1)DataProcessing.R
@@ -83,16 +83,17 @@ dirpiece <- infReps
 
 if(useInferentialReplicates==TRUE){
   #Will save necessary temporary files that contain all inferential replicates for all biological samples/replicates for a specific set of genes
-  SaveFullinfRepDat()
+  SaveFullinfRepDat(SalmonFilesDir = SalmonFilesDir, save_dir = save_dir, GibbsSamps = GibbsSamps,
+                    filteredgenenames = filteredgenenames, cntGene = cntGene, key = key)
 
   #Save the within subject covariance matricies (on the ilr scale)
-  SaveWithinSubjCovMatrices()
+  SaveWithinSubjCovMatrices(GibbsSamps = GibbsSamps, curr_part_num = curr_part_num, nsamp = nsamp)
 
 }
 
 #Save the files that will be directly loaded to run CompDTUReg, with each gene having a separate file
   #If a file already exists for that gene, the function will skip resaving that one to save time
-SaveGeneLevelFiles(dir1 = dir1, direc_to_save = direc_to_save, useInferentialReplicates = useInferentialReplicates)
+SaveGeneLevelFiles(dir1 = dir1, GeneLevelFilesSaveDir = GeneLevelFilesSaveDir, useInferentialReplicates = useInferentialReplicates, GibbsSamps = GibbsSamps)
 
 
 
