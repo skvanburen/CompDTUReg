@@ -53,7 +53,7 @@ names(QuantFiles) <- paste0("Sample", 1:length(QuantFiles))
 
 #Create key matrix that contains matches samples to conditions and identifiers
 #Code later will be expecting key to have columns "Sample", "Condition", and "Identifier"
-#With identifier containing names as "Sample1", "Sample2", etc even if data isn't corresponding to unique biological samples
+#With "Identifier" containing names as "Sample1", "Sample2", etc even if data isn't corresponding to unique biological samples
   #because this is how future code will expect key to be constructed
 key <- matrix(c("SRR950078", "A",
                 "SRR950080", "A",
@@ -120,7 +120,7 @@ if(countsFromAbundance=="scaledTPM" | countsFromAbundance=="lengthScaledTPM"){
 
 #The filtering values below can be modified to make the filtering more or less strict
 #These are the default values used in
-#Love et al (2018) (Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification [version 3])
+  #Love et al (2018) (Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification [version 3])
 
 
 #Sample size of smallest condition

@@ -9,7 +9,7 @@ nsamp <- 10
 #Specify the number of parts the full dataset should be split into.  The number necessary will depend on the number of biological replicates/samples
   #For example, we use 10 parts for the 10 replicate SEQC data and 100 for the 462 sample E-GEUV-1 data
   #It is necessary to split the data up to ensure specific files do not get too large for R to use effectively
-  #This becomes especially true as teh number of smaples increases
+  #This becomes especially true as the number of smaples increases
 nparts <- 10
 
 #array_value needs to span the number of parts the data is split up into, specified by nparts above

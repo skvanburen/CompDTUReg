@@ -1,9 +1,9 @@
 #Save Inferential Replicates to R with one file per biological sample
-#These files will be saved within the outer
+#These files will be saved within the outer directory
 library(CompDTUReg)
 
 #SalmonFilesDir is the directory where the Salmon quantification results are saved
-#and where the sample specific inferential replicates will be saved
+  #and where the sample specific inferential replicates will be saved
 SalmonFilesDir <- "~/res/SQCCDataReproduceOldResBeforeCommonCode/SalmonReproduceResBeforeCommonCodeBootSamps/"
 setwd(SalmonFilesDir)
 
@@ -36,7 +36,7 @@ curr_file_loc <- QuantFiles2[array_val2]
 
 
 
-#Set to true if using Gibbs samples, false if using bootstrap samples
+#Set to TRUE if using Gibbs samples as inferential replicates, FALSE if using bootstrap samples
 GibbsSamps <- FALSE
 
 #Set value for countsFromAbundnace parameter for use with txImport
