@@ -16,11 +16,11 @@ library(CompDTUReg)
 For details of the model, see (Give bioarxiv link).
 
 ## Usage  
-For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the CompDTUReg methods starting with a folder of Salmon quantifications  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  For example Salmon quantification data that contains quantified data for 10 replicates, see the repo 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  Specifically:<br>
+For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the CompDTUReg methods starting with a folder of Salmon quantifications  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  For example Salmon quantification data for 10 replicates, see the repo 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  Specifically:<br>
  <br>
-(1)DataProcessing.R gives example code to import the non-inferential data into R and save initial files needed for further processing, including the tx2gene object that links a transcript to a gene<br>
+(1)DataProcessing.R gives example code to import the non-inferential data into R and save initial files needed for further processing, including the tx2gene object that links a transcript to a gene as well as the datasets after filtering using DRIMSeq's filtering.<br>
  <br>
-(2)SaveInfRepsAsRData.R gives example code to save the inferential replicate data by sample.  This data must be saved by sample because the data otherwise becomes too large to work with easily in R, especially as the number of biological samples/replicates becomes very high.  If no inferential replicates (ie bootstrap/Gibbs) samples are used, file (2) should be skipped.  <br>
+(2)SaveInfRepsAsRData.R gives example code to save the inferential replicate data by sample.  This data must be saved by sample because the data otherwise becomes too large to work with directly in R, especially as the number of biological samples/inferential replicates becomes very high.  If no inferential replicates (ie bootstrap/Gibbs samples) are used, file (2) should be skipped.  <br>
  <br>
 (3)SaveNecessaryDatasetsForCompDTUReg.R gives example code to save necessary temporary files that include information about inferential replicates and the GeneLevelFiles that contain all data needed to run the DTU compositional regressions. If no inferential replicates (ie bootstrap/Gibbs samples) are used, useInferentialReplicates in file (3) should be set to FALSE. <br>
  <br>
