@@ -9,6 +9,8 @@ if(!dir.exists(def_wd)){
 setwd(def_wd)
 
 #SalmonFilesDir is the directory where the Salmon quantification results have already been saved
+#See the Github repo CompDTURegSampleData located at https://github.com/skvanburen/CompDTURegSampleData to download sample data for
+  #10 replicates with 100 bootstrap samples each
 SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 
 #func_loc <- "~/code/CompFunctions.R"
