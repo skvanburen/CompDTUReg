@@ -22,13 +22,16 @@ calcPillaiPval(
 extract the degrees of freedom of the residual (df_residual) otherwise this must be specified}
 
 \item{q}{is degrees of freedom of the categorical predictor being tested in the current hypothesis test (usually condition).
-For example, with 2 condition levels q is 1, with 2 levels q is 2, etc}
+For example, with 2 condition levels q is 1, with 3 levels q is 2, etc}
 
 \item{nsamp}{is the number of samples used in the analysis. Note that this is the number of unique biological samples and is thus not
 a function of the number of inferential replicates used in an analysis.}
 
 \item{df_residual}{is the degrees of freedom of the residual. Can be extracted from the lm_model_fit object otherwise has to
 be specified.  Equal to the number of samples used minus the number of total coefficients fit by the model.}
+}
+\value{
+The p-value from the Pillai significance test.
 }
 \description{
 \code{calcPillaiPval} calculate the Pillai pvalue for a categorical predictor

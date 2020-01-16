@@ -11,6 +11,7 @@ SaveFullinfRepDat(
   filteredgenenames,
   cntGene,
   key,
+  nparts,
   curr_part_num,
   DRIMSeqFiltering = TRUE
 )
@@ -18,25 +19,36 @@ SaveFullinfRepDat(
 \arguments{
 \item{SalmonFilesDir}{is the directory the Salmon quantification results are saved in}
 
-\item{save_dir}{is the directory to save the datasets.  Datasets can get quite large so choose a directory with plenty of free space.}
+\item{save_dir}{is the outer directory to save the full inferential replicate datasets in.  Datasets can get quite large with a large number of samples or small number of parts so choose a directory with plenty of free space.
+Specified directory should be the same in \code{\link{SaveFullinfRepDat}}, \code{\link{SaveWithinSubjCovMatrices}}, and \code{\link{SaveGeneLevelFiles}}.}
 
-\item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE is the replicates are bootstrap samples}
+\item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE if the replicates are bootstrap samples}
 
 \item{filteredgenenames}{is a character vector of all genenames that pass filtering}
 
 \item{cntGene}{is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}}
 
-\item{key}{is a data.frame with columns "Sample" (corresponding to te unique bioogical identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
-and "Identifier", which should just be "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
+\item{key}{is a data.frame with columns "Sample" (corresponding to the unique biological identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
+and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 the observations don't correspond to unique biological samples.}
 
-\item{curr_part_num}{is the current part number that is being run.  See the example in the sample code  (3)SaveNecessaryDatasetsForCompDTUReg.R}
+\item{nparts}{is the total number of parts to split the \code{filteredgenenames} list into when saving the datasets.  See details.}
 
-\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Should be set to TRUE.}
+\item{curr_part_num}{is the current part number that is being run.  The genelist specified in \code{filteredgenenames} is split into \code{nparts} equally sized chunks. See the example in (3)SaveNecessaryDatasetsForCompDTUReg.R within the package's SampleCode folder}
+
+\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Will almost always be set to TRUE.}
+}
+\value{
+The function will save three separate .RData files that contains all bootstrap or Gibbs replicates for all samples for the genes that exist for the current part of the data (specified by \code{curr_part_num}).  Specifically, the abDataset cntDataset files containing all bootstrap/Gibbs samples
+for the current part will be saved in the sub directories "infRepsabDatasets/" and "infRepscntDatasets/" respectively.  See the documentation for the function \code{\link{sumToGene}} for more information on the abDataset and cntDataset files.  Additionally, a data.frame that contains TPM and count information for all genes
+in the current part for all samples is saved in the subdirectory "infRepsFullinfRepDat/".
 }
 \description{
 Save the datasets that contain data across all inferential replicates and samples for a particular subset of genes
 }
 \details{
-This function is used to save the necessary inferential replicate datasets. See the file (3)SaveNecessaryDatasetsForCompDTUReg.R for example code to work with this function.
+This function is used to save the necessary inferential replicate datasets.  These files can get quite large with a large number of genes and/or a large number or biological samples or inferential replicates.  The parameter \code{nparts} controls how many chunks the full data is split into based
+on splitting gene name list \code{filteredgenenames} into \code{nparts} chunks.  Increasing \code{nparts} can help mitigate issues with the resulting files becoming too large.
+For example, for a ten sample analysis with 100 bootstrap samples we set nparts to be 10 to result in files that are around 150 MB each.  The files saved by this function will be used by \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.
+ See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 }

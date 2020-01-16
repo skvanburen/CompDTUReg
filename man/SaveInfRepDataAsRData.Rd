@@ -16,12 +16,21 @@ SaveInfRepDataAsRData(
 \item{curr_samp}{Gives the current sample number in the form of "Sample1", "Sample2", etc.  Used in conjunction with key$Identifier, so needs to be "Sample1", "Sample2", etc
 even if the observation does not correspond to a unique biological sample}
 
-\item{curr_file_loc}{Gives the location of the .sf file for the Salmon quantification of the current Sample}
+\item{curr_file_loc}{Gives the location of the .sf file for the Salmon quantification of the current Sample specified by the \code{curr_samp} parameter}
 
-\item{GibbsSamps}{is TRUE/FALSE specifying whether Gibbs samples of bootstrap samples are being used}
+\item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE if the replicates are bootstrap samples}
 
-\item{direc_to_save_res}{is an optional directory to save the sample specific dataset.  If unspecifying it will be saved to the current working directory.}
+\item{countsFromAbundance}{character corresponding to the countsFromAbundance parameter used when importing the data with \code{\link{tximport}}.  Possible values are \code{"no"}, \code{"scaledTPM"}, or \code{"lengthScaledTPM"}.}
+
+\item{direc_to_save_res}{is an optional directory to save the sample specific dataset containing bootstrap or Gibbs replicates.  If unspecifying it will be saved to the current working directory.}
+}
+\value{
+This function saves a file that contains all bootstrap or Gibbs samples for the given biological sample input by the \code{curr_samp} parameter.  Data is saved in
+the subdirectory BootSamps or GibbsSamps off of the current working directory unless the parameter \code{direc_to_save_res} is specified.
 }
 \description{
 Save the infRep data for all genes across each unique biological sample/replicate.
+}
+\details{
+The count values will be scaled by the TPM values if \code{countsFromAbundance} is \code{scaledTPM} or \code{lengthScaledTPM} See the file (2)SaveInfRepsAsRData.R in the package's SampleCode folder for example code.
 }

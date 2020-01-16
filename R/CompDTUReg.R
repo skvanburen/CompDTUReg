@@ -5,9 +5,17 @@
 #' \code{startCompDTUReg} start the compositional DTU regression model corresponding to a specific gene-level file.
 #'
 #' \code{startCompDTUReg} runs the compositional DTU regression models.  This is a helper function to run \code{\link{CompDTUReg}} from gene level files originating
-#' from the file (4)RunCompositionalRegressions in the sample code for the package.
+#' from the file (4)RunCompositionalRegressions.R in the sample code for the package.
 #' @inheritParams CompDTUReg
 #' @param x The file path to a specific gene-level file
+#'
+#' @details This function loads results from \code{\link{SaveGeneLevelFiles}} thatcontain all input arguments aside from \code{extraPredictors} (if any),
+#' and input arguments to \code{\link{CompDTUReg}} are automatically set by \code{\link{startCompDTUReg}}.
+#' See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
+#'
+#' @return a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
+#' the current dataset being used.
+#'
 #' @export startCompDTUReg
 startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 
@@ -32,16 +40,23 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 #' should have a number of rows corresponding to the number of samples and a number of columns corresponding to the number of ilr coordinates
 #' (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model with measurement error, as it is not used.
 #' @param Group A vector of condition assignments corresponding to the samples
-#' @param runWithME is a T/F indicating whether the model should be run with measurement error or not (corresponding to CompDTU
+#' @param runWithME is TRUE/FALSE indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 #' and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.
 #' @param YInfRep corresponds is the ilr transformed matrix of response values for the inferential replicate data.  Matrix
 #' should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
 #' (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.
-#' @param Group A vector of condition assignments corresponding to the samples
-#' @param  extraPredictors is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.
+#' @param mean.withinhat is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).
+#' @param  extraPredictors is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
+#' The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.
 #'
-#' @return a data.frame containing the gene_id being used, p-value for the CompDTU/CompDTUme, and various information on
-#' the current dataset being used
+#' @details  This function is run separately for each gene and the easiest way to run it will be to follow the pipeline given in the SampleCode folder of the package.
+#' In particular the easiest way to call this is to use the helper function \code{\link{startCompDTUReg}}, which loads results from \code{\link{SaveGeneLevelFiles}}.
+#' These results contain all input arguments aside from \code{extraPredictors} (if any), and input arguments are automatically set by \code{\link{startCompDTUReg}}.
+#' See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
+#'
+#' @return a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
+#' the current dataset being used.
+#'
 #' @export CompDTUReg
 CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
                        extraPredictors = NULL){
@@ -235,11 +250,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 #' @param lm_model_fit is a lm object from the regression model if interest.  If specified it can be used to
 #' extract the degrees of freedom of the residual (df_residual) otherwise this must be specified
 #' @param q is degrees of freedom of the categorical predictor being tested in the current hypothesis test (usually condition).
-#' For example, with 2 condition levels q is 1, with 2 levels q is 2, etc
+#' For example, with 2 condition levels q is 1, with 3 levels q is 2, etc
 #' @param nsamp is the number of samples used in the analysis. Note that this is the number of unique biological samples and is thus not
 #' a function of the number of inferential replicates used in an analysis.
 #' @param df_residual is the degrees of freedom of the residual. Can be extracted from the lm_model_fit object otherwise has to
 #' be specified.  Equal to the number of samples used minus the number of total coefficients fit by the model.
+#'
+#' @return The p-value from the Pillai significance test.
 calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, lm_model_fit = NULL, q, nsamp, df_residual = NA){
   if(is.null(lm_model_fit) & is.na(df_residual)){
     stop("df. residual must be specified to calcPillaiPval or else an lm object must specified in lm_model_fit to extract df.residual from")

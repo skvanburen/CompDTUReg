@@ -1,10 +1,18 @@
 #Save Inferential Replicates to R with one file per biological sample
-#These files will be saved within the outer directory
+  #These files will be saved within the SalmonFilesDir directory
+  #If interential replicates are not used you may skip the file and go straight to (3)
 library(CompDTUReg)
+
+def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
+
+#Load tx2gene object that will be needed by future code
+load(paste0(def_wd,"tx2gene.RData"))
 
 #SalmonFilesDir is the directory where the Salmon quantification results are saved
   #and where the sample specific inferential replicates will be saved
-SalmonFilesDir <- "~/res/SQCCDataReproduceOldResBeforeCommonCode/SalmonReproduceResBeforeCommonCodeBootSamps/"
+
+#SalmonFilesDir is the directory where the Salmon quantification results have already been saved
+SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 setwd(SalmonFilesDir)
 
 #Code needs to loop over the biological samples in some form, we provide sample
@@ -46,8 +54,6 @@ GibbsSamps <- FALSE
 countsFromAbundance <- "scaledTPM"
 
 
-dir1 <- "~/res/SQCCDataReproduceOldResBeforeCommonCodeTest/"
-load(paste0(dir1,"tx2gene.RData"))
 
 
 #Files will be saved to SalmonFilesDir/BootSamps for bootstrap samples or /GibbsSamps for Gibbs samples

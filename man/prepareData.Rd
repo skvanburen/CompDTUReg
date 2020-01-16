@@ -24,8 +24,8 @@ prepareData(
 
 \item{nsamp}{is the number of biological samples/replicates used in the analysis}
 
-\item{key}{is a data.frame with columns "Sample" (corresponding to te unique bioogical identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
-and "Identifier", which should just be "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
+\item{key}{is a data.frame with columns "Sample" (corresponding to the unique biological identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
+and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 the observations don't correspond to unique biological samples.}
 
 \item{samps}{is an optional vector containing the sample names.  Need to specify this if sample names are not just paste0("Sample", 1:nsamp) without any missing.}

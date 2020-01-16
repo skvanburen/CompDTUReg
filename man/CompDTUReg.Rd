@@ -23,19 +23,28 @@ should have a number of rows corresponding to the number of samples and a number
 
 \item{Group}{A vector of condition assignments corresponding to the samples}
 
-\item{runWithME}{is a T/F indicating whether the model should be run with measurement error or not (corresponding to CompDTU
+\item{runWithME}{is TRUE/FALSE indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.}
 
 \item{YInfRep}{corresponds is the ilr transformed matrix of response values for the inferential replicate data.  Matrix
 should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
 (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.}
 
-\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.}
+\item{mean.withinhat}{is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).}
+
+\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
+The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.}
 }
 \value{
-a data.frame containing the gene_id being used, p-value for the CompDTU/CompDTUme, and various information on
-the current dataset being used
+a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
+the current dataset being used.
 }
 \description{
 \code{CompDTUReg} runs the CompDTU and CompDTUme regression models for a specific gene.
+}
+\details{
+This function is run separately for each gene and the easiest way to run it will be to follow the pipeline given in the SampleCode folder of the package.
+In particular the easiest way to call this is to use the helper function \code{\link{startCompDTUReg}}, which loads results from \code{\link{SaveGeneLevelFiles}}.
+These results contain all input arguments aside from \code{extraPredictors} (if any), and input arguments are automatically set by \code{\link{startCompDTUReg}}.
+See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 }

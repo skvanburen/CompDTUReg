@@ -21,8 +21,8 @@ DRIMSeqFilter(
 \arguments{
 \item{cntGene}{is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}}
 
-\item{key}{is a data.frame with columns "Sample" (corresponding to te unique bioogical identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
-and "Identifier", which should just be "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
+\item{key}{is a data.frame with columns "Sample" (corresponding to the unique biological identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
+and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 the observations don't correspond to unique biological samples.}
 
 \item{min_samps_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed}
@@ -38,12 +38,19 @@ the observations don't correspond to unique biological samples.}
 \item{min_gene_expr}{From \code{\link{dmFilter}} documentation: Minimal gene expression.}
 
 \item{sampstouse}{is a vector of sample names (in the form of "Sample1", "Sample2", etc) to be used in the analysis.
-This argument should be used is you only wanted to run a subset of all sample ID's from key$Identifier.}
+This argument should be used if you only want to run a subset of all sample ID's from key$Identifier.}
 
 \item{failedinfRepsamps}{is an optional parameter that gives names of samples ((in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
 This should not be needed, as newer versions of Salmon don't seem to have this issue but is left for backward compatability.}
 }
+\value{
+This function will save versions of abGene, cntGene, abDatasets, and cntDatasets containing information for only those genes and transcripts that pass filtering with the given input parameters.
+For more information on the output datasets see \code{\link{sumToGene}}.
+}
 \description{
 Filter data using filtering procedure built into \emph{DRIMSeq} via the \code{\link{dmFilter}} function.  Will automatically save
 the filtered versions of the various datasets described in \code{\link{sumToGene}}
+}
+\details{
+This function internally calls \code{\link{dmFilter}}.  See the documentation for that function for more information.  See also the file (1)DataProcessing.R in the package's SampleCode folder for example code.
 }

@@ -1,20 +1,22 @@
-#Data Processing Code
+#Code to process data quantified from Salmon
 library(CompDTUReg)
 
 #def_wd is the top level directory where files will be saved
-def_wd <- "~/res/SQCCDataReproduceOldResBeforeCommonCodeTest/"
+def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
 if(!dir.exists(def_wd)){
   dir.create(def_wd)
 }
 setwd(def_wd)
 
 #SalmonFilesDir is the directory where the Salmon quantification results have already been saved
-SalmonFilesDir <- "~/res/SQCCDataReproduceOldResBeforeCommonCode/SalmonReproduceResBeforeCommonCodeBootSamps/"
+SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 
 #func_loc <- "~/code/CompFunctions.R"
 #source(func_loc)
 
 #Specify location of annotation to use in maketx2gene
+#GENCODE annotations can be downloaded from https://www.gencodegenes.org/human/
+#We used the annotations for the reference chromosomes only
 txdb_loc <- "~/gencode.v27.annotation.gtf.gz"
 
 
@@ -144,7 +146,7 @@ min_gene_expr <- 10
 sampstouse <- key$Identifier
 
 DRIMSeqFilter(cntGene = cntGene, key = key, min_samps_feature_expr = min_samps_feature_expr, min_feature_expr = min_feature_expr,
-              min_samps_feature_prop = min_samps_feature_prop, min_feature_prop = min_feature_prop, min_samps_gene_expr = min_samps_gene_expr
+              min_samps_feature_prop = min_samps_feature_prop, min_feature_prop = min_feature_prop, min_samps_gene_expr = min_samps_gene_expr,
               min_gene_expr = min_gene_expr, sampstouse = sampstouse)
 
 

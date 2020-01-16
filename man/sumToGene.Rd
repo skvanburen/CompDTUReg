@@ -14,26 +14,28 @@ sumToGene(
 )
 }
 \arguments{
-\item{QuantSalmon}{is the Salmon quantification object output using tximport (see (1) for example code)}
+\item{QuantSalmon}{is the Salmon quantification object output using tximport (see file (1)DataProcessing.R in the package's SampleCode folder for example code)}
 
-\item{key}{is a data.frame with columns "Sample" (corresponding to te unique bioogical identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
-and "Identifier", which should just be "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
+\item{key}{is a data.frame with columns "Sample" (corresponding to the unique biological identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
+and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 the observations don't correspond to unique biological samples.}
 
 \item{tx2gene}{is a dataframe that matches transcripts to genes. Can be created by \code{\link{maketx2gene}}.}
 
 \item{clust}{An optional clust object of class parallel to parallelize within this function.  See \code{\link{makeCluster}} for more information.}
 
-\item{countsFromAbundance}{character corresponding the countsFromAbundance parameter used in \code{\link{tximport}} step}
+\item{countsFromAbundance}{character corresponding to the countsFromAbundance parameter used when importing the data with \code{\link{tximport}}.  Possible values are \code{"no"}, \code{"scaledTPM"}, or \code{"lengthScaledTPM"}.}
 
 \item{GenAllGroupCombos}{is a TRUE/FALSE indicator for generating all possible condition combinations from key$Condition.  Only ever needed for certain power analyses, will almost always be set to FALSE.}
 }
 \value{
 \code{sumToGene} saves initial files from the quantification.  These files include lists of gene-specific expression estimates with and with "OtherGroups",
 which was a filtering alternative we considered in addition to filters built into \emph{DRIMSeq}.  abDatasets correspond to TPM abundances and cntDatasets correspond to counts that may be scaled relative to TPMs
-is countsFromAdundance is either "scaledTPM" or "lengthScaledTPM".  abGene and cntGene contain the TPM and (possibly scaled) counts with one row per transcript.  These additionally contain additional information
-that may be useful, including total gene expression (TGE) for each biological sample and added up across different genes,mean and total TGE by condition, relative transcript
-abundance proportions (RTAs), and information about the major transcript for that gene, which is the most highly expressed transcript for that gene.
+if \code{countsFromAdundance} is either "scaledTPM" or "lengthScaledTPM".
+
+abGene and cntGene contain the TPM and (possibly scaled) counts with one row per transcript respectively.  These also contain additional information
+that may be useful, including total gene expression (TGE) for each biological sample and total expression added up across different genes, mean and total TGE by condition, relative transcript
+abundance proportions (RTAs), and information about the major transcript for that gene, which is the most highly expressed transcript for that gene across all samples.  See the file (1)DataProcessing.R in the package's SampleCode folder for example code.
 }
 \description{
 Summarize the non-inferential rep data from Salmon to gene level (see details)

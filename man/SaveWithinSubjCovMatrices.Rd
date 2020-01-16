@@ -5,24 +5,41 @@
 \title{Save the ilr-transformed within subject covariance matricies needed for a \emph{CompDTUme} analysis}
 \usage{
 SaveWithinSubjCovMatrices(
+  directory,
+  save_dir,
   GibbsSamps,
   curr_part_num,
   nsamp,
-  DRIMSeqFiltering = TRUE
+  DRIMSeqFiltering = TRUE,
+  CLE = TRUE,
+  CLEParam = 0.01
 )
 }
 \arguments{
-\item{GibbsSamps}{is TRUE/FALSE specifying whether Gibbs samples of bootstrap samples are being used}
+\item{directory}{is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}}
 
-\item{curr_part_num}{is the current part number that is being run.  See the example in the sample code  (3)SaveNecessaryDatasetsForCompDTUReg.R}
+\item{save_dir}{is the outer directory to save the full inferential replicate datasets in.  Datasets can get quite large with a large number of samples or small number of parts so choose a directory with plenty of free space.
+Specified directory should be the same in \code{\link{SaveFullinfRepDat}}, \code{\link{SaveWithinSubjCovMatrices}}, and \code{\link{SaveGeneLevelFiles}}.}
+
+\item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE if the replicates are bootstrap samples}
+
+\item{curr_part_num}{is the current part number that is being run.  The genelist specified in \code{filteredgenenames} is split into \code{nparts} equally sized chunks. See the example in (3)SaveNecessaryDatasetsForCompDTUReg.R within the package's SampleCode folder}
 
 \item{nsamp}{is the number of biological samples/replicates used in the analysis}
 
-\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Should be set to TRUE.}
+\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Will almost always be set to TRUE.}
+
+\item{CLE}{is TRUE if the \code{\link{CorrectLowExpression}} procedure is to be used to correct low expression and FALSE if not.  Should be the same value in both \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.}
+
+\item{CLEParam}{is the parameter that controls the correction threshold (see details)}
+}
+\value{
+This function will save the sample-specific mean and covariance values across all inferential replicates on the \code{\link{ilr}} scale for all genes within the current part number \code{curr_part_num}.  These files will be saved within the subdirectory
+"ilrMeansCovs/" in the \code{save_dir} folder and will be used by \code{\link{SaveGeneLevelFiles}} if present.
 }
 \description{
 Save the ilr-transformed within subject covariance matricies needed for a \emph{CompDTUme} analysis
 }
 \details{
-This function is used to save the necessary within subject covariance matrices. See the file (3)SaveNecessaryDatasetsForCompDTUReg.R for example code to work with this function.
+This function is used to save the necessary within subject covariance matrices. See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 }

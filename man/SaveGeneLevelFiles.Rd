@@ -5,27 +5,40 @@
 \title{Save a file for each gene containing all information necessary to run CompDTUReg}
 \usage{
 SaveGeneLevelFiles(
-  dir1,
+  directory,
+  save_dir,
   GeneLevelFilesSaveDir,
+  curr_part_num,
   DRIMSeqFiltering = TRUE,
   useInferentialReplicates = TRUE,
-  CorrectLowExpression = TRUE,
-  CorrectLowExpressionParam = 0.01,
-  GibbsSamps
+  GibbsSamps,
+  CLE = TRUE,
+  CLEParam = 0.01
 )
 }
 \arguments{
-\item{dir1}{is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}}
+\item{directory}{is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}}
 
 \item{GeneLevelFilesSaveDir}{is the directory the gene level files will be saved to}
 
+\item{curr_part_num}{if the current part number to save results for.  See \code{\link{SaveFullinfRepDat}} for more details.}
+
 \item{DRIMSeqFiltering}{is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-using the OtherGroups approach we considered and generally should not be used.}
+using the OtherGroups approach we had considered and generally should not be used.}
 
-\item{useInferentialReplicates}{is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise}
+\item{useInferentialReplicates}{is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise.  If FALSE the argument \code{GibbsSamps} is ignored.}
 
-\item{GibbsSamps}{is TRUE/FALSE specifying whether Gibbs samples of bootstrap samples are being used}
+\item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE if the replicates are bootstrap samples}
+
+\item{CLE}{is TRUE if the \code{\link{CorrectLowExpression}} procedure is to be used to correct low expression and FALSE if not.  Should be the same value in both \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.}
+}
+\value{
+The function saves gene-level .RData files within the subdirectory \code{GeneLevelFilesSaveDir} of \code{save_dir} that contain all necessary
+information to run a \code{\link{CompDTUReg}} analysis, including inferential replicates (if any).  The name of each file is the name of the current gene.
 }
 \description{
 Save a file for each gene containing all information necessary to run CompDTUReg
+}
+\details{
+See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 }

@@ -3,6 +3,18 @@
 
 library(CompDTUReg)
 
+#Directory previous results are loaded from
+#Make sure this matches def_wd from (2)SaveInfRepsAsRData
+def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
+
+#Outer directory where the full inferential replicate datasets (if used) and gene level files will be saved
+#These files can get quite large, so it is a good idea to specify a directory with plenty of extra storage space
+save_dir <- def_wd
+
+if(!dir.exists(save_dir)){
+  dir.create(save_dir)
+}
+
 #Specify number of biological replicates/samples
 nsamp <- 10
 
@@ -22,17 +34,6 @@ curr_part_num <- array_val
 #Set to true if bootstrap/Gibbs samples are available and to be incorporated via the CompME model, FALSE if you only want to use Comp model with no bootstrap or Gibbs samples
 useInferentialReplicates <- TRUE
 
-if(useInferentialReplicates==TRUE){
-
-  #Directory where the full inferential replicate datasets and gene level files will be saved
-  #These files can get quite large, so it is a good idea to specify a directory with plenty of extra storage space
-  save_dir <- "/pine/scr/s/k/skvanbur/SQCCDataReproduceOldResBeforeCommonCodeTest/"
-  if(!dir.exists(save_dir)){
-    dir.create(save_dir)
-  }
-
-}
-
 
 #Directory where the gene level files to be used for the analysis will be saved
 GeneLevelFilesSaveDir <- paste0(save_dir, "GeneLevelFiles/")
@@ -42,32 +43,28 @@ if(!dir.exists(GeneLevelFilesSaveDir)){dir.create(GeneLevelFilesSaveDir, recursi
 #Set countsFromAbundance value to match whatever was used previously
 countsFromAbundance <- "scaledTPM"
 
-#Directory previous results are loaded from
-#Make sure this matches dir1 from (2)SaveInfRepsAsRData
-dir1 <- "~/res/SQCCDataReproduceOldResBeforeCommonCodeTest/"
 
 if(countsFromAbundance=="scaledTPM" | countsFromAbundance=="lengthScaledTPM"){
-  load(paste0(dir1, "cntGenecntsScaledTPMFiltered.RData"))
+  load(paste0(def_wd, "cntGenecntsScaledTPMFiltered.RData"))
   cntGene <- cntGeneFiltered
 }else{
-  load(paste0(dir1, "cntGeneFiltered.RData"))
+  load(paste0(def_wd, "cntGeneFiltered.RData"))
   cntGene <- cntGeneFiltered
 }
 
-load(paste0(dir1,"tx2gene.RData"))
-load(paste0(dir1, "abDatasetsNoOtherGroupsFiltered.RData"))
+load(paste0(def_wd,"tx2gene.RData"))
+load(paste0(def_wd, "abDatasetsNoOtherGroupsFiltered.RData"))
 filteredgenenames <- names(abDatasetsFiltered)
 
 
 #Specify directory where Salmon quantification files are saved
   #should match the same argument from (2)
-SalmonFilesDir <- "~/res/SQCCDataReproduceOldResBeforeCommonCode/SalmonReproduceResBeforeCommonCodeBootSamps/"
+SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 
 #Load Salmon quantification object imported into R format using tximport in (1)DataProcessing.R
 load(paste0(SalmonFilesDir, "SalmonData.RData"))
 
-def_wd1 <- SalmonFilesDir
-setwd(def_wd1)
+setwd(SalmonFilesDir)
 
 
 #Set to "Boot" if using bootstrap samples and "Gibbs" if using Gibbs samples
@@ -81,19 +78,22 @@ if(infReps=="Boot"){
 type <- infReps
 dirpiece <- infReps
 
+CLE <- TRUE
+
 if(useInferentialReplicates==TRUE){
   #Will save necessary temporary files that contain all inferential replicates for all biological samples/replicates for a specific set of genes
   SaveFullinfRepDat(SalmonFilesDir = SalmonFilesDir, save_dir = save_dir, GibbsSamps = GibbsSamps,
-                    filteredgenenames = filteredgenenames, cntGene = cntGene, key = key)
+                    filteredgenenames = filteredgenenames, cntGene = cntGene, key = key, nparts = nparts, curr_part_num = curr_part_num)
 
   #Save the within subject covariance matricies (on the ilr scale)
-  SaveWithinSubjCovMatrices(GibbsSamps = GibbsSamps, curr_part_num = curr_part_num, nsamp = nsamp)
+  SaveWithinSubjCovMatrices(directory = def_wd, save_dir = save_dir, GibbsSamps = GibbsSamps, curr_part_num = curr_part_num, nsamp = nsamp,
+                            CLE = CLE)
 
 }
 
 #Save the files that will be directly loaded to run CompDTUReg, with each gene having a separate file
   #If a file already exists for that gene, the function will skip resaving that one to save time
-SaveGeneLevelFiles(dir1 = dir1, GeneLevelFilesSaveDir = GeneLevelFilesSaveDir, useInferentialReplicates = useInferentialReplicates, GibbsSamps = GibbsSamps)
+SaveGeneLevelFiles(directory = def_wd, GeneLevelFilesSaveDir = GeneLevelFilesSaveDir, useInferentialReplicates = useInferentialReplicates, GibbsSamps = GibbsSamps)
 
 
 

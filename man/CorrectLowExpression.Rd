@@ -4,12 +4,12 @@
 \alias{CorrectLowExpression}
 \title{Correct sample/gene combinations that have expression values of 0 or close to 0 to stabilize results}
 \usage{
-CorrectLowExpression(y, a = 0.01)
+CorrectLowExpression(y, CLEParam = 0.01)
 }
 \arguments{
 \item{y}{is the data for the current gene/sample combination}
 
-\item{a}{is the parameter that controls the correction threshold (see details)}
+\item{CLEParam}{is the parameter that controls the correction threshold (see details)}
 }
 \description{
 Correct sample/gene combinations that have expression values of 0 or close to 0 to stabilize results

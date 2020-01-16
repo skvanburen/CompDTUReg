@@ -9,12 +9,22 @@ startCompDTUReg(x, runWithME, extraPredictors = NULL)
 \arguments{
 \item{x}{The file path to a specific gene-level file}
 
-\item{runWithME}{is a T/F indicating whether the model should be run with measurement error or not (corresponding to CompDTU
+\item{runWithME}{is TRUE/FALSE indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.}
 
-\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.}
+\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
+The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.}
+}
+\value{
+a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
+the current dataset being used.
 }
 \description{
 \code{startCompDTUReg} runs the compositional DTU regression models.  This is a helper function to run \code{\link{CompDTUReg}} from gene level files originating
-from the file (4)RunCompositionalRegressions in the sample code for the package.
+from the file (4)RunCompositionalRegressions.R in the sample code for the package.
+}
+\details{
+This function loads results from \code{\link{SaveGeneLevelFiles}} thatcontain all input arguments aside from \code{extraPredictors} (if any),
+and input arguments to \code{\link{CompDTUReg}} are automatically set by \code{\link{startCompDTUReg}}.
+See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 }
