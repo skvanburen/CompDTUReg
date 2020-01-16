@@ -16,7 +16,7 @@ library(CompDTUReg)
 For details of the model, see (Give bioarxiv link).
 
 ## Usage  
-For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the DTUCompReg method starting with a folder of Salmon quantifications.  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  Specifically:<br>
+For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the CompDTUReg methods starting with a folder of Salmon quantifications  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  For example Salmon quantification data that contains quantified data for 10 replicates, see the repo 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  Specifically:<br>
  <br>
 (1)DataProcessing.R gives example code to import the non-inferential data into R and save initial files needed for further processing, including the tx2gene object that links a transcript to a gene<br>
  <br>
