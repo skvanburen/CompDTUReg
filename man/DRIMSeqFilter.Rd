@@ -6,6 +6,7 @@
 the filtered versions of the various datasets described in \code{\link{sumToGene}}}
 \usage{
 DRIMSeqFilter(
+  abGene,
   cntGene,
   key,
   min_samps_feature_expr,
@@ -14,11 +15,15 @@ DRIMSeqFilter(
   min_feature_prop,
   min_samps_gene_expr,
   min_gene_expr,
+  tx2gene,
+  countsFromAbundance,
   sampstouse = NULL,
   failedinfRepsamps = NULL
 )
 }
 \arguments{
+\item{abGene}{is the data.frame of abundances (TPMs) for each sample saved by \code{\link{sumToGene}}}
+
 \item{cntGene}{is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}}
 
 \item{key}{is a data.frame with columns "Sample" (corresponding to the unique biological identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
@@ -36,6 +41,10 @@ the observations don't correspond to unique biological samples.}
 \item{min_samps_gene_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where genes should be expressed.}
 
 \item{min_gene_expr}{From \code{\link{dmFilter}} documentation: Minimal gene expression.}
+
+\item{tx2gene}{is a dataframe that matches transcripts to genes. Can be created by \code{\link{maketx2gene}}.}
+
+\item{countsFromAbundance}{character corresponding to the countsFromAbundance parameter used when importing the data with \code{\link{tximport}}.  Possible values are \code{"no"}, \code{"scaledTPM"}, or \code{"lengthScaledTPM"}.}
 
 \item{sampstouse}{is a vector of sample names (in the form of "Sample1", "Sample2", etc) to be used in the analysis.
 This argument should be used if you only want to run a subset of all sample ID's from key$Identifier.}

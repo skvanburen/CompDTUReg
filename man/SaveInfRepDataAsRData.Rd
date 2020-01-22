@@ -6,6 +6,7 @@
 \usage{
 SaveInfRepDataAsRData(
   curr_samp,
+  tx2gene,
   curr_file_loc,
   GibbsSamps = FALSE,
   countsFromAbundance = "no",
@@ -15,6 +16,8 @@ SaveInfRepDataAsRData(
 \arguments{
 \item{curr_samp}{Gives the current sample number in the form of "Sample1", "Sample2", etc.  Used in conjunction with key$Identifier, so needs to be "Sample1", "Sample2", etc
 even if the observation does not correspond to a unique biological sample}
+
+\item{tx2gene}{is a dataframe that matches transcripts to genes. Can be created by \code{\link{maketx2gene}}.}
 
 \item{curr_file_loc}{Gives the location of the .sf file for the Salmon quantification of the current Sample specified by the \code{curr_samp} parameter}
 

@@ -1,6 +1,7 @@
 #This function reads in the major transcript information from abDatasets and adds it into the temporary
 #'Add Major Trans Info to Existing abundance and count dataframes
 #'
+#'
 #' \code{addMajorTrans} adds a binary indicator of the major trans for a given gene
 #'
 #' \code{addMajorTrans} adds a binary indicator variable that takes a value of 1 if
@@ -8,6 +9,8 @@
 #' is the transcript that has the highest average expression proportion across all samples
 #' for the given gene.  The major transcripts are computed in \code{\link{generateData}} and input
 #' to this function via the abDatasets file.
+#' @inheritParams prepareData
+#' @inheritParams generateData
 #' @param genestouse A list of genenames that are in use for the compositional analysis.
 #' @param abGeneTempF data.frame of abundance information that will have the major transcript info added to it
 #' @param cntGeneTempF data.frame of count information that will have the major transcript info added to it. Usually also contains length information.
@@ -55,7 +58,7 @@ addMajorTrans <- function(genestouse, abGeneTempF, cntGeneTempF, abDatasets, Com
 #' @export
 maketx2gene <- function(txdb_loc, save_loc = NULL){
   temp1 <- GenomicFeatures::makeTxDbFromGFF(txdb_loc)
-  temp2 <- DataFrame(transcripts(temp1, columns = c("tx_id", "tx_name", "gene_id")))
+  temp2 <- S4Vectors::DataFrame(GenomicFeatures::transcripts(temp1, columns = c("tx_id", "tx_name", "gene_id")))
   tx2genetemp <- data.frame(as.character(temp2$tx_name),as.character(temp2$gene_id), stringsAsFactors = FALSE)
   colnames(tx2genetemp) <- c("tx_id", "gene_id")
 
@@ -103,7 +106,7 @@ maketx2gene <- function(txdb_loc, save_loc = NULL){
 sumToGene <- function(QuantSalmon, key, tx2gene, clust = NULL, countsFromAbundance, GenAllGroupCombos = FALSE){
   nsamp <- ncol(QuantSalmon$abundance)
   Grouptemp <- key$Condition
-  Group <- relevel(as.factor(Grouptemp), ref = 1)
+  Group <- stats::relevel(as.factor(Grouptemp), ref = 1)
 
   countsFromAbundance <- QuantSalmon$countsFromAbundance
 
@@ -209,7 +212,7 @@ sumToGeneHelper <- function(abundance, counts, lengths, tx2gene, Group, clust, n
   }
 
   if(is.null(clust)){
-    clust <- makeCluster(1)
+    clust <- parallel::makeCluster(1)
   }
   #Get data into initial format needed
 
@@ -253,7 +256,7 @@ sumToGeneHelper <- function(abundance, counts, lengths, tx2gene, Group, clust, n
   }
 
   ST2 <- proc.time()
-  abDatasets <- parLapply(clust, genestouse, generateData, dat = CompAbGene,
+  abDatasets <- parallel::parLapply(clust, genestouse, generateData, dat = CompAbGene,
                           nsamp = length(Group), abundance = TRUE, abData = CompAbGene, abCompDatasets = abD,
                           useExistingOtherGroups = useExistingOtherGroups, useOtherGroups = useOtherGroups,
                           useExistingMajorTrans = useExistingMajorTrans)
@@ -269,7 +272,7 @@ sumToGeneHelper <- function(abundance, counts, lengths, tx2gene, Group, clust, n
 
   #Use the other groups from abDatasets created just above
   ST3 <- proc.time()
-  cntDatasets <- parLapply(clust, genestouse, generateData, dat = CompCntGene,
+  cntDatasets <- parallel::parLapply(clust, genestouse, generateData, dat = CompCntGene,
                            nsamp = length(Group), abundance = FALSE, abData = CompAbGene,
                            abCompDatasets = abDatasets, useExistingOtherGroups = TRUE,
                            useOtherGroups = useOtherGroups, useExistingMajorTrans = TRUE)
@@ -304,12 +307,11 @@ sumToGeneHelper <- function(abundance, counts, lengths, tx2gene, Group, clust, n
   #This is only possible if there aren't too many samples and is only working for the 10 SQCCData samples for now
   #So by default this is turned of
   if(GenAllGroupCombos==TRUE){
-    library(gtools)
     nsamp <- length(Group)
     numCond1 <- sum(Group==levels(Group)[1])
 
     #Choose elements corresponding to level 1
-    Combs <- combinations(nsamp, numCond1)
+    Combs <- gtools::combinations(nsamp, numCond1)
     ncomb <- nrow(Combs)
     #Construct all complete Group combinations, each row is a possible arrangement of group
     AllGroupCombinations <- matrix(NA, nrow = ncomb, ncol = nsamp)
@@ -389,15 +391,15 @@ sumToGeneHelper <- function(abundance, counts, lengths, tx2gene, Group, clust, n
 #'
 #' \code{prepareData} generates abundance and count data to be used later, notably in \code{\link{generateData}}
 #'
+#' @inheritParams generateData
 #' @param abundance is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level quantification estimates.  Column names should not include "TPM".
 #' @param counts is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level quantification estimates. Column names should not include "Cnt".
-#' @param length is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level effective length information. Column names should not include "Length".
+#' @param lengths is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level effective length information. Column names should not include "Length".
 #' @param tx2gene is a dataframe that matches transcripts to genes. Can be created by \code{\link{maketx2gene}}.
 #' @param nsamp is the number of biological samples/replicates used in the analysis
 #' @param key is a data.frame with columns "Sample" (corresponding to the unique biological identifier for the analysis), "Condition" (giving the condition/treatment effect variables for the data),
 #'  and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 #'  the observations don't correspond to unique biological samples.
-#' @param CompMI is a TRUE/FALSE corresponding to whether datasets for the multiple imputation based analysis are being used.  This will add columns for transcripts that may be missing in the inferential replicates that were't missing in the non-inferential replicate data.  Default is FALSE.
 #' @param samps is an optional vector containing the sample names.  Need to specify this if sample names are not just paste0("Sample", 1:nsamp) without any missing.
 #'
 #' @return list of length 2 with the first element being the abundance data (abGeneTempF) and the second being the count data (cntGeneTempF) for use with \code{\link{generateData}}
@@ -478,8 +480,8 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
 
   #Generate total sums for each sample/gene combo by
   #aggregating over each gene (ie total expression for that gene in that sample)
-  abgenetotals <- aggregate(abGeneTemp2[,abcolnums], by = list(gene_id = abGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
-  cntgenetotals <- aggregate(cntGeneTemp2[,cntcolnums], by = list(gene_id = cntGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
+  abgenetotals <- stats::aggregate(abGeneTemp2[,abcolnums], by = list(gene_id = abGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
+  cntgenetotals <- stats::aggregate(cntGeneTemp2[,cntcolnums], by = list(gene_id = cntGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
 
   #TGE short for total gene expression, ie total expression of that gene for that sample across all transcripts
 
@@ -505,7 +507,7 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
   #If key is not specified, the sum of the total gene expression (sumTGE) cannot be calculated for each condition only (neither can meanTGE)
   if(!is.null(key)){
     ncond <- length(unique(key$Condition))
-    Group <- relevel(as.factor(key$Condition), ref = 1)
+    Group <- stats::relevel(as.factor(key$Condition), ref = 1)
     for(i in 1:ncond){
       assign(paste0("SampsCond", i), subset(key$Identifier, Group==levels(key$Condition)[i]))
       Samps <- get(paste0("SampsCond", i))
@@ -631,6 +633,7 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
 #' This also computes the MajorTranscript for each gene, which is the transcript with the highest expression level across all samples and stores it as an attribute.
 #' The MajorTranscript is always computed based on the abundance data.  For this reason, need to run this on abundance data first then use those results for count data.
 #'
+#' @import data.table
 #' @param x is a genename of interest.  Genes that have <2 transcripts or have total expression across all samples of 0 are filtered out before calling this function since they can never by used for any kind of DTU analysis
 #' @param dat is the observed count or TPM data.  Usually this is the output from \code{\link{prepareData}} that has additionally been filtered by excluding genes with 1 transcript of those that have a total expression level of 0.
 #' @param nsamp is the number of biological samples/replicates
@@ -650,7 +653,6 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
 #'  If the data is at the count level each element of the list has two elements corresponding to Counts and Lengths.
 #'  A list of transcripts that make up the Other category can be viewed in the attribute "OtherTrans", as can a full list of transcripts for that gene ("FullTrans") and a list of transcripts that did not contribute to the Other category "NotOtherTrans".
 generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL, useExistingOtherGroups, useOtherGroups = FALSE, useExistingMajorTrans = TRUE, infReps = "none", ninfreps = NA, samps = NULL, CompMI = FALSE){
-  library(Matrix)
   #for (i in 1:length(fullgenenames)) {
   #x <- genestouse[1]
   temp <- subset(dat, dat$gene_id==x)
@@ -693,6 +695,7 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
   GDinf <- function(x, data, subcols, infReps){
     data2 <- subset(data, data$infRepNum==x)
     data3 <- data2[,subcols, with = FALSE]
+    #data3 <- data.table:::`[.data.table`(data2, , subcols, with = F)
 
     data4 <- data.frame(data3)
     data5 <- t(data4)
@@ -715,8 +718,9 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
 
   }else{
     sub <- temp[,subcols, with = FALSE]
+    #sub <- data.table:::`[.data.table`(temp, , subcols, with = F)
     rownames(sub) <- rownames(temp)
-    d1t <- data.frame(rbindlist(apply(as.matrix(1:ninfreps), 1, GDinf, data = temp,
+    d1t <- data.frame(data.table::rbindlist(apply(as.matrix(1:ninfreps), 1, GDinf, data = temp,
                                       subcols = subcols, infReps = infReps), use.names = TRUE))
     rownames(d1t) <- d1t$id
     d1t$id <- NULL
@@ -916,7 +920,7 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
 
   #calculating rank for the Gibbs/Boot datasets causes computational issues, and is never needed based on the way the analysis is done, so don't bother calculating it
   if(infReps=="none"){
-    attr(d3, "FullRank") <- (rankMatrix(d3) == ncol(d3))
+    attr(d3, "FullRank") <- (Matrix::rankMatrix(d3) == ncol(d3))
   }
 
   ##################################################################################################################
@@ -1047,8 +1051,10 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
 #Filter functions using procedure from \emph{DRIMSeq}
 #' Filter data using filtering procedure built into \emph{DRIMSeq} via the \code{\link{dmFilter}} function.  Will automatically save
 #' the filtered versions of the various datasets described in \code{\link{sumToGene}}
+#' @param abGene is the data.frame of abundances (TPMs) for each sample saved by \code{\link{sumToGene}}
 #' @param cntGene is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}
 #' @inheritParams prepareData
+#' @inheritParams sumToGene
 #' @param min_samps_feature_expr From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed
 #' @param min_feature_expr From \code{\link{dmFilter}} documentation: Minimal feature expression.
 #' @param min_samps_feature_prop From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed.
@@ -1066,8 +1072,8 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
 #' For more information on the output datasets see \code{\link{sumToGene}}.
 #'
 #' @export DRIMSeqFilter
-DRIMSeqFilter <- function(cntGene, key, min_samps_feature_expr, min_feature_expr, min_samps_feature_prop,
-                          min_feature_prop, min_samps_gene_expr, min_gene_expr, sampstouse = NULL, failedinfRepsamps = NULL){
+DRIMSeqFilter <- function(abGene, cntGene, key, min_samps_feature_expr, min_feature_expr, min_samps_feature_prop,
+                          min_feature_prop, min_samps_gene_expr, min_gene_expr, tx2gene, countsFromAbundance, sampstouse = NULL, failedinfRepsamps = NULL){
 
   temp1 <- PreDRIMSeq(cntGene = cntGene, failedinfRepsamps = failedinfRepsamps, key = key)
   cnts <- temp1$cnts
@@ -1077,18 +1083,21 @@ DRIMSeqFilter <- function(cntGene, key, min_samps_feature_expr, min_feature_expr
     samp2 <- samp
   }else{
     samp2 <- subset(samp, samp$sample_id %in% sampstouse)
-    samp2$group <- relevel(factor(samp2$group), ref = 1)
+    samp2$group <- stats::relevel(factor(samp2$group), ref = 1)
   }
 
-  DRIMData <- dmDSdata(counts = cnts, samples = samp2)
+  nsamp <- nrow(samp2)
+  Group <- samp2$group
 
-  DRIMData2 <- dmFilter(DRIMData,
+  DRIMData <- DRIMSeq::dmDSdata(counts = cnts, samples = samp2)
+
+  DRIMData2 <- DRIMSeq::dmFilter(DRIMData,
                         min_samps_feature_expr=min_samps_feature_expr, min_feature_expr=min_feature_expr,
                         min_samps_feature_prop=min_samps_feature_prop, min_feature_prop=min_feature_prop,
                         min_samps_gene_expr=min_samps_gene_expr, min_gene_expr=min_gene_expr)
 
 
-  DRIMSeqFilteredData <- counts(DRIMData2)
+  DRIMSeqFilteredData <- DRIMSeq::counts(DRIMData2)
   transcriptstouse <- DRIMSeqFilteredData$feature_id
   fullgenenames_filtered <- unique(DRIMSeqFilteredData$gene_id)
 
@@ -1130,6 +1139,9 @@ DRIMSeqFilter <- function(cntGene, key, min_samps_feature_expr, min_feature_expr
 
   abGeneFiltered <- FilteredDat$abGene
   cntGeneFiltered <- FilteredDat$cntGene
+
+  abGeneFilteredCompTime <- FilteredDat$abGeneCompTime
+  cntGeneFilteredCompTime <- FilteredDat$cntGeneCompTime
 
   NTransFilabGene <- data.frame(table(abGeneFiltered$gene_id))
   colnames(NTransFilabGene) <- c("gene_id", "NTransFiltered")
@@ -1203,7 +1215,7 @@ PreDRIMSeq <- function(cntGene, key, failedinfRepsamps = NULL){
   colnames(cnts)[colnames(cnts) %in% sampstousecols] <- sampstouse
   rownames(cnts) <- cnts$feature_id
 
-  grp <- relevel(factor(Group), ref = 1)
+  grp <- stats::relevel(factor(Group), ref = 1)
   samp <- data.frame(sample_id = sampstouse, group = grp)
 
   return(list(cnts = cnts, samp = samp))
@@ -1226,11 +1238,11 @@ PreDRIMSeq <- function(cntGene, key, failedinfRepsamps = NULL){
 #'
 #' @return This function saves a file that contains all bootstrap or Gibbs samples for the given biological sample input by the \code{curr_samp} parameter.  Data is saved in
 #' the subdirectory BootSamps or GibbsSamps off of the current working directory unless the parameter \code{direc_to_save_res} is specified.
-##' @export SaveInfRepDataAsRData
-SaveInfRepDataAsRData <- function(curr_samp, curr_file_loc, GibbsSamps = FALSE, countsFromAbundance = "no", direc_to_save_res = NULL){
+#' @export SaveInfRepDataAsRData
+SaveInfRepDataAsRData <- function(curr_samp, tx2gene, curr_file_loc, GibbsSamps = FALSE, countsFromAbundance = "no", direc_to_save_res = NULL){
 
   startTime <- proc.time()
-  QuantSalmon <- tryCatch(tximport(curr_file_loc, type = "salmon", txOut = TRUE, countsFromAbundance = countsFromAbundance,
+  QuantSalmon <- tryCatch(tximport::tximport(curr_file_loc, type = "salmon", txOut = TRUE, countsFromAbundance = countsFromAbundance,
                                    ignoreTxVersion = FALSE, dropInfReps = F), error=function(e){})
   if(is.null(QuantSalmon)){
     stop("The infRep sampler seems to have failed for this sample, so no Gibbs output will be able to be saved")
@@ -1269,7 +1281,7 @@ SaveInfRepDataAsRData <- function(curr_samp, curr_file_loc, GibbsSamps = FALSE, 
 
 
   #Stack all gibbs/boot samples for this biological sample on top of each other
-  outp <- rbindlist(apply(as.matrix(1:ninfreps), 1, SaveInfRepDataAsRDataHelper, t4 = t4, l3 = l3, curr_samp = curr_samp))
+  outp <- data.table::rbindlist(apply(as.matrix(1:ninfreps), 1, SaveInfRepDataAsRDataHelper, t4 = t4, l3 = l3, curr_samp = curr_samp))
   #outp <- rbindlist(apply(as.matrix(1:1), 1, SaveInfRepDataAsRDataHelper, t4 = t4, l3 = l3, curr_samp = curr_samp))
   outp2 <- merge(outp, tx2gene, by = "tx_id")
   SaveInfRepsAsRCompTime <- proc.time() - startTime
@@ -1422,10 +1434,12 @@ cntsToTPM <- function(cnts, nsamp, len = NULL, samps = NULL){
 #' @inheritParams SaveInfRepDataAsRData
 #' @inheritParams DRIMSeqFilter
 #' @inheritParams prepareData
+#' @inheritParams sumToGene
 #' @param SalmonFilesDir is the directory the Salmon quantification results are saved in
 #' @param save_dir is the outer directory to save the full inferential replicate datasets in.  Datasets can get quite large with a large number of samples or small number of parts so choose a directory with plenty of free space.
 #' Specified directory should be the same in \code{\link{SaveFullinfRepDat}}, \code{\link{SaveWithinSubjCovMatrices}}, and \code{\link{SaveGeneLevelFiles}}.
 #' @param filteredgenenames is a character vector of all genenames that pass filtering
+#' @param abDatasetsFiltered is a list of dataframes that contains filtered TPM measurements for genes/transcripts that pass filtering.  Is output by \code{\link{DRIMSeqFilter}}
 #' @param nparts is the total number of parts to split the \code{filteredgenenames} list into when saving the datasets.  See details.
 #' @param curr_part_num is the current part number that is being run.  The genelist specified in \code{filteredgenenames} is split into \code{nparts} equally sized chunks. See the example in (3)SaveNecessaryDatasetsForCompDTUReg.R within the package's SampleCode folder
 #' @param DRIMSeqFiltering is TRUE if DRIMSeq's filtering method is used.  Will almost always be set to TRUE.
@@ -1439,7 +1453,7 @@ cntsToTPM <- function(cnts, nsamp, len = NULL, samps = NULL){
 #' for the current part will be saved in the sub directories "infRepsabDatasets/" and "infRepscntDatasets/" respectively.  See the documentation for the function \code{\link{sumToGene}} for more information on the abDataset and cntDataset files.  Additionally, a data.frame that contains TPM and count information for all genes
 #' in the current part for all samples is saved in the subdirectory "infRepsFullinfRepDat/".
 #' @export SaveFullinfRepDat
-SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgenenames, cntGene, key, nparts, curr_part_num, DRIMSeqFiltering = TRUE){
+SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, save_dir, GibbsSamps, filteredgenenames, cntGene, key, nparts, curr_part_num, DRIMSeqFiltering = TRUE){
 
   startTime <- proc.time()
 
@@ -1451,12 +1465,14 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
   if(GibbsSamps==TRUE){
     load_dir <- paste0(SalmonFilesDir, "GibbsSamps")
     infReps <- "Gibbs"
+    type <- "Gibbs"
   }else{
     load_dir <- paste0(SalmonFilesDir, "BootSamps")
     infReps <- "Boot"
+    type <- "Boot"
   }
 
-
+  nsamp <- nrow(key)
 
   #Now, need to generate dataframe that has the following columns: tx_id, Sample1TPM, Sample2TPM, ..., GibbsRep#
   #To do this, need to load in the GibbsSamps dataframe for each sample, select only a current subset of genes
@@ -1472,8 +1488,8 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
   genestouse_split <- chunk2(genestouse, nparts)
 
   #Gene list for all genes included in cntGene, even if some of them only have 1 transcript or are filtered out, etc
-    #If passing cntGeneFiltered as the argument cntGene, this will be equivalent to only using the genes to be used in the compositional analysis
-      #Generally this will be the case
+  #If passing cntGeneFiltered as the argument cntGene, this will be equivalent to only using the genes to be used in the compositional analysis
+  #Generally this will be the case
   all_genes_annotation_split <- chunk2(unique(sort(cntGene$gene_id)), nparts)
 
   #Gene list only for those genes that will be used in the compositional analysis
@@ -1483,7 +1499,7 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
   curr_genes_all_genes_annotation <- all_genes_annotation_split[[curr_part_num]]
 
 
-  infRepFiles <- mixedsort(list.files(load_dir, pattern = ".RData", full.names = TRUE))
+  infRepFiles <- gtools::mixedsort(list.files(load_dir, pattern = ".RData", full.names = TRUE))
 
   #Load the first sample to get the ngibbs/nboot value and assign that value to ninfreps
   d <- loadRData(infRepFiles[1])
@@ -1537,10 +1553,12 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
     }
     col <- colnames(curr)[grep("TPM", colnames(curr))]
     datt$newcol <-  curr[,col, with = F]
+    #datt$newcol <- data.table:::`[.data.table`(curr, , col, with = F)
     colnames(datt)[colnames(datt)=="newcol"] <- col
 
     col2 <- colnames(curr)[grep("Cnt", colnames(curr))]
     datt$newcol2 <-  curr[,col2, with = F]
+    #datt$newcol2 <-  data.table:::`[.data.table`(curr, , col2, with = F)
     colnames(datt)[colnames(datt)=="newcol2"] <- col2
 
     rm(curr)
@@ -1584,10 +1602,12 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
     }
     col <- colnames(curr)[grep("TPM", colnames(curr))]
     datt2$newcol <-  curr[,col, with = F]
+    #datt2$newcol <- data.table:::`[.data.table`(curr, , col, with = F)
     colnames(datt2)[colnames(datt2)=="newcol"] <- col
 
     col2 <- colnames(curr)[grep("Cnt", colnames(curr))]
     datt2$newcol2 <-  curr[,col2, with = F]
+    #datt2$newcol2 <- data.table:::`[.data.table`(curr, , col2, with = F)
     colnames(datt2)[colnames(datt2)=="newcol2"] <- col2
 
     rm(curr)
@@ -1597,7 +1617,7 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
 
   if(DRIMSeqFiltering==TRUE){
 
-    abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nrow(key), abundance = TRUE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
+    abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
     names(abGNO) <- curr_genes
 
     assign(paste0("abDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num), abGNO)
@@ -1617,7 +1637,7 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
     gc()
 
 
-    cntGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nrow(key), abundance = FALSE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
+    cntGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = FALSE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
     names(cntGNO) <- curr_genes
 
     assign(paste0("cntDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num), cntGNO)
@@ -1634,76 +1654,76 @@ SaveFullinfRepDat <- function(SalmonFilesDir, save_dir, GibbsSamps, filteredgene
     save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
   }
 
-  if(DRIMSeqFiltering==FALSE){
-    abG <- lapply(curr_genes, generateData, dat = datt2, nsamp = nrow(key), abundance = TRUE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps)
-    # abG <- laply(curr_genes[100:200], generateData, dat = datt, nsamp = nrow(key), abundance = TRUE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps, .inform = TRUE, .progress = "text")
-    names(abG) <- curr_genes
-
-    assign(paste0("abDatasets", type, "Part", curr_part_num), abG)
-
-    rm(abG)
-    gc()
-    obj1 <- c(paste0("abDatasets", type, "Part", curr_part_num))
-    #save(abDatasetsGibbsReps, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsReps.RData")
-
-    if(!dir.exists(paste0(save_dir, sd1))){
-      dir.create(paste0(save_dir, sd1))
-    }
-
-    save(InfRepsKey, ninfreps, nsamp, list = obj1, file = paste0(save_dir, sd1, "abDatasets", type, "Part", curr_part_num, ".RData"))
-
-
-    rm(list = paste0("abDatasets", type, "Part", curr_part_num))
-    gc()
-
-    cntG <- lapply(curr_genes, generateData, dat = datt2, nsamp = nrow(key), abundance = FALSE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps)
-    names(cntG) <- curr_genes
-
-    assign(paste0("cntDatasets", type, "Part", curr_part_num), cntG)
-    obj1 <- c(paste0("cntDatasets", type, "Part", curr_part_num))
-
-    rm(cntG)
-    gc()
-
-    if(!dir.exists(paste0(save_dir, sd2))){
-      dir.create(paste0(save_dir, sd2))
-    }
-
-    save(InfRepsKey, ninfreps, nsamp, list = obj1, file = paste0(save_dir, sd2, "cntDatasets", type, "Part", curr_part_num, ".RData"))
-
-    rm(list = paste0("cntDatasets", type, "Part", curr_part_num))
-    gc()
-
-
-    abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nrow(key), abundance = TRUE, abCompDatasets = abDatasetsNoOtherGroups, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
-    names(abGNO) <- curr_genes
-
-    assign(paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num), abGNO)
-    obj2 <- c(paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num))
-
-    rm(abGNO)
-    gc()
-
-    #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
-    save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd1, "abDatasets", type, "NoOtherGroupsPart", curr_part_num, ".RData"))
-
-
-    rm(list = paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num))
-    gc()
-
-
-    cntGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nrow(key), abundance = FALSE, abCompDatasets = abDatasetsNoOtherGroups, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
-    names(cntGNO) <- curr_genes
-
-    assign(paste0("cntDatasets", type, "NoOtherGroupsPart", curr_part_num), cntGNO)
-    obj2 <- c(paste0("cntDatasets", type, "NoOtherGroupsPart", curr_part_num))
-
-    rm(cntGNO)
-    gc()
-
-    #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
-    save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "NoOtherGroupsPart", curr_part_num, ".RData"))
-  }
+  # if(DRIMSeqFiltering==FALSE){
+  #   abG <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps)
+  #   # abG <- laply(curr_genes[100:200], generateData, dat = datt, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps, .inform = TRUE, .progress = "text")
+  #   names(abG) <- curr_genes
+  #
+  #   assign(paste0("abDatasets", type, "Part", curr_part_num), abG)
+  #
+  #   rm(abG)
+  #   gc()
+  #   obj1 <- c(paste0("abDatasets", type, "Part", curr_part_num))
+  #   #save(abDatasetsGibbsReps, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsReps.RData")
+  #
+  #   if(!dir.exists(paste0(save_dir, sd1))){
+  #     dir.create(paste0(save_dir, sd1))
+  #   }
+  #
+  #   save(InfRepsKey, ninfreps, nsamp, list = obj1, file = paste0(save_dir, sd1, "abDatasets", type, "Part", curr_part_num, ".RData"))
+  #
+  #
+  #   rm(list = paste0("abDatasets", type, "Part", curr_part_num))
+  #   gc()
+  #
+  #   cntG <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = FALSE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps)
+  #   names(cntG) <- curr_genes
+  #
+  #   assign(paste0("cntDatasets", type, "Part", curr_part_num), cntG)
+  #   obj1 <- c(paste0("cntDatasets", type, "Part", curr_part_num))
+  #
+  #   rm(cntG)
+  #   gc()
+  #
+  #   if(!dir.exists(paste0(save_dir, sd2))){
+  #     dir.create(paste0(save_dir, sd2))
+  #   }
+  #
+  #   save(InfRepsKey, ninfreps, nsamp, list = obj1, file = paste0(save_dir, sd2, "cntDatasets", type, "Part", curr_part_num, ".RData"))
+  #
+  #   rm(list = paste0("cntDatasets", type, "Part", curr_part_num))
+  #   gc()
+  #
+  #
+  #   abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasetsNoOtherGroups, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
+  #   names(abGNO) <- curr_genes
+  #
+  #   assign(paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num), abGNO)
+  #   obj2 <- c(paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num))
+  #
+  #   rm(abGNO)
+  #   gc()
+  #
+  #   #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
+  #   save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd1, "abDatasets", type, "NoOtherGroupsPart", curr_part_num, ".RData"))
+  #
+  #
+  #   rm(list = paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num))
+  #   gc()
+  #
+  #
+  #   cntGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = FALSE, abCompDatasets = abDatasetsNoOtherGroups, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
+  #   names(cntGNO) <- curr_genes
+  #
+  #   assign(paste0("cntDatasets", type, "NoOtherGroupsPart", curr_part_num), cntGNO)
+  #   obj2 <- c(paste0("cntDatasets", type, "NoOtherGroupsPart", curr_part_num))
+  #
+  #   rm(cntGNO)
+  #   gc()
+  #
+  #   #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
+  #   save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "NoOtherGroupsPart", curr_part_num, ".RData"))
+  # }
 
 
 }
@@ -1737,7 +1757,8 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
   abDatasetsSubDir <- "infRepsabDatasets/"
 
   #Directory to save the within subject covariance matrices
-  ilrMeansCovsSubDir <- "ilrMeansCovs/"
+  #ilrMeansCovsSubDir <- "ilrMeansCovs/"
+  ilrMeansCovsSubDir <- "WithinSubjectCovarianceMatrices/"
 
   if(GibbsSamps==TRUE){
     dirpiece <- "Gibbs"
@@ -1821,12 +1842,16 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
     names(ilrMeansCovsNoOtherGroupsFiltered) <- genestouse3
 
     assign(paste0("ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num), ilrMeansCovsNoOtherGroupsFiltered)
+    #assign(paste0("WithinSubjectCovarianceMatricesFilteredPart", curr_part_num), ilrMeansCovsNoOtherGroupsFiltered)
 
     if(!dir.exists(paste0(save_dir, ilrMeansCovsSubDir))){
       dir.create(paste0(save_dir, ilrMeansCovsSubDir))
     }
     save(list = paste0("ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num),
          file = paste0(save_dir, ilrMeansCovsSubDir,"ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num, ".RData"))
+    # save(list = paste0("WithinSubjectCovarianceMatricesFilteredPart", curr_part_num),
+    #      file = paste0(save_dir, ilrMeansCovsSubDir,"WithinSubjectCovarianceMatricesFilteredPart", curr_part_num, ".RData"))
+
   }
 }
 
@@ -1842,12 +1867,12 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
   if(ncol(test1)==1){
     return(NULL)
   }
-  test2 <- test1[mixedorder(rownames(test1)),]
+  test2 <- test1[gtools::mixedorder(rownames(test1)),]
 
-  SampNames <- laply(rownames(test2), function(x){strsplit(x, "TPM")[[1]][1]})
-  UniqueSampNames <- mixedsort(unique(SampNames))
+  SampNames <- plyr::laply(rownames(test2), function(x){strsplit(x, "TPM")[[1]][1]})
+  UniqueSampNames <- gtools::mixedsort(unique(SampNames))
 
-  UniqueSampNumbers <- as.numeric(laply(UniqueSampNames, function(x){strsplit(x, "Sample")[[1]][2]}))
+  UniqueSampNumbers <- as.numeric(plyr::laply(UniqueSampNames, function(x){strsplit(x, "Sample")[[1]][2]}))
   #codetest <- apply(test2, 1, ilr)
   #Calculate the ilr values and their means and covs separately for each biological sample
   Means <- list()
@@ -1874,7 +1899,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
     }
     test3 <- test2[SampNames==curr_samp,]
 
-    test3SampNames <- laply(rownames(test3), function(x){strsplit(x, "TPM")[[1]][1]})
+    test3SampNames <- plyr::laply(rownames(test3), function(x){strsplit(x, "TPM")[[1]][1]})
     if(length(unique(test3SampNames))!=1){
       stop("Something is wrong in calcIlrMeansCovs, observations from more than 1 sample are being used at the same time")
     }
@@ -1897,9 +1922,9 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
 
     if(CLE==TRUE){
       test3_2 <- CorrectLowExpression(test3)
-      test4 <- apply(test3_2, 1, function(x){ilr(x)})
+      test4 <- apply(test3_2, 1, function(x){compositions::ilr(x)})
     }else{
-      test4 <- apply(test3, 1, function(x){ilr(x)})
+      test4 <- apply(test3, 1, function(x){compositions::ilr(x)})
     }
 
 
@@ -1917,7 +1942,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
     colnames(ilrMeans) <- NULL
     rownames(ilrMeans) <- NULL
 
-    ilrCov <- cov(test5)
+    ilrCov <- stats::cov(test5)
 
     Means[[i]] <- ilrMeans
     #names(Means)[i] <- paste0("Sample", i)
@@ -1937,6 +1962,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
 #' Save a file for each gene containing all information necessary to run CompDTUReg
 #' @inheritParams SaveInfRepDataAsRData
 #' @inheritParams SaveWithinSubjCovMatrices
+#' @inheritParams CorrectLowExpression
 #' @param directory is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}
 #' @param GeneLevelFilesSaveDir is the directory the gene level files will be saved to
 #' @param curr_part_num if the current part number to save results for.  See \code{\link{SaveFullinfRepDat}} for more details.
@@ -1949,7 +1975,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
 #'
 #' @details See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 #' @export SaveGeneLevelFiles
-SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_part_num, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE, GibbsSamps,
+SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE, GibbsSamps,
                                CLE = TRUE, CLEParam = 0.01){
   setwd(directory)
 
@@ -1961,6 +1987,9 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
     load("abDatasetsNoOtherGroupsFiltered.RData")
     load("tx2gene.RData")
 
+    abGeneFiltered <- abGeneFiltered
+    cntGeneFiltered <- cntGeneFiltered
+    abDatasetsFiltered <- abDatasetsFiltered
 
     abGene <- abGeneFiltered
     cntGene <- cntGeneFiltered
@@ -1971,6 +2000,8 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
     load("abDatasets.RData")
     load("tx2gene.RData")
   }
+
+  key <- key
 
   Group <- key$Condition
   sampstouse <- key$Identifier
@@ -1985,7 +2016,8 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
 
   if(useInferentialReplicates==TRUE){
     abDatasetsSubDir <- "infRepsabDatasets/"
-    ilrMeansCovsSubDir <- "ilrMeansCovs/"
+    #ilrMeansCovsSubDir <- "ilrMeansCovs/"
+    ilrMeansCovsSubDir <- "WithinSubjectCovarianceMatrices/"
 
     if(DRIMSeqFiltering==TRUE){
       ilrMeansCovs <- loadRData(paste0(directory, ilrMeansCovsSubDir, "ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num, ".RData"))
@@ -2006,6 +2038,9 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
   }
 
 
+  if(!dir.exists(GeneLevelFilesSaveDir)){
+    dir.create(GeneLevelFilesSaveDir)
+  }
 
 
 
@@ -2038,11 +2073,10 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
     }
 
     if(CLE==TRUE){
-      Y <- unclass(ilr(ccomp(CorrectLowExpression(abDatasetsToUse[[1]], CLEParam), total = 1)))
+      Y <- unclass(compositions::ilr(compositions::ccomp(CorrectLowExpression(abDatasetsToUse[[1]], CLEParam), total = 1)))
     }else{
-      Y <- unclass(ilr(ccomp(abDatasetsToUse[[1]], total = 1)))
+      Y <- unclass(compositions::ilr(compositions::ccomp(abDatasetsToUse[[1]], total = 1)))
     }
-
 
     #Remove "TPM" from rownames of Y if it is still present, as these no longer correspond to TPMs
     rownames(Y) <- strsplit(rownames(Y), "TPM")
@@ -2076,9 +2110,9 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
       }else{
 
         if(CLE == TRUE){
-          YInfRep <- unclass(ilr(ccomp(CorrectLowExpression(newAbDatasetsInfRepsFinal[[1]], CLEParam), total = 1)))
+          YInfRep <- unclass(compositions::ilr(compositions::ccomp(CorrectLowExpression(newAbDatasetsInfRepsFinal[[1]], CLEParam), total = 1)))
         }else{
-          YInfRep <- unclass(ilr(ccomp(newAbDatasetsInfRepsFinal[[1]], total = 1)))
+          YInfRep <- unclass(compositions::ilr(compositions::ccomp(newAbDatasetsInfRepsFinal[[1]], total = 1)))
         }
 
         rownames(YInfRep) <- lapply(strsplit(rownames(YInfRep), "TPM"), FUN = function(x){paste0(x[1], x[2])})
@@ -2124,15 +2158,15 @@ SaveGeneLevelFiles <- function(directory, save_dir, GeneLevelFilesSaveDir, curr_
 
 #' Correct sample/gene combinations that have expression values of 0 or close to 0 to stabilize results
 #' @param y is the data for the current gene/sample combination
-#' @param CLEParam is the parameter that controls the correction threshold (see details)
-#' @details The parameter a works as follows: any TPM value that is less than `a' percent of the total gene-level
+#' @param CLEParam is the parameter that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)
+#' @details The CLEParam parameter a works as follows: any TPM value that is less than `a' percent of the total gene-level
 #' expression for the sample is replaced by `a' percent of this expression.  Mathematically, let \eqn{T_{ij}} be the TPM value for
 #' transcript $j=1,..., D$ for sample $i = 1,..., n$ within a given gene with $D$ transcripts.  Any \deqn{T_{ij} < a * (T_{i1}+...+T_{iD})} will be replaced by \deqn{a * (T_{i1}+...+T_{iD})}
 #'  This procedure results in relative transcript abundance fractions (RTAFs)
 #' being zero only when every \eqn{T_{ij}} is equal to zero.  The value \eqn{a} can be increased or decreased to result in more or less modification to
-#' the observed TPM values.  As $a$ increases, the proportions are driven closer to each other, with each converging towards \eqn{(1/D)} as \eqn{a}converges to 1
+#' the observed TPM values.  As $a$ increases, the proportions are driven closer to each other, with each converging towards \eqn{(1/D)} as \eqn{a} converges to 1
 #' (and each equal to \eqn{(1/D)} for \eqn{a > 1}).  We find \deqn{a=0.01} is a good compromise that is large enough to stabilize the ilr coordinates sufficiently while
-#' additionally not over-modifying the observed data, and use this value for all \emph{CompDTU} and \emph{CompDTUme} results.
+#' additionally not over-modifying the observed data, and use this value by default for all \emph{CompDTU} and \emph{CompDTUme} results.
 #' @export CorrectLowExpression
 CorrectLowExpression <- function(y, CLEParam = 0.01){
   if(is.null(y)){

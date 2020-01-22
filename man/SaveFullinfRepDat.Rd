@@ -6,6 +6,8 @@
 \usage{
 SaveFullinfRepDat(
   SalmonFilesDir,
+  QuantSalmon,
+  abDatasetsFiltered,
   save_dir,
   GibbsSamps,
   filteredgenenames,
@@ -18,6 +20,10 @@ SaveFullinfRepDat(
 }
 \arguments{
 \item{SalmonFilesDir}{is the directory the Salmon quantification results are saved in}
+
+\item{QuantSalmon}{is the Salmon quantification object output using tximport (see file (1)DataProcessing.R in the package's SampleCode folder for example code)}
+
+\item{abDatasetsFiltered}{is a list of dataframes that contains filtered TPM measurements for genes/transcripts that pass filtering.  Is output by \code{\link{DRIMSeqFilter}}}
 
 \item{save_dir}{is the outer directory to save the full inferential replicate datasets in.  Datasets can get quite large with a large number of samples or small number of parts so choose a directory with plenty of free space.
 Specified directory should be the same in \code{\link{SaveFullinfRepDat}}, \code{\link{SaveWithinSubjCovMatrices}}, and \code{\link{SaveGeneLevelFiles}}.}

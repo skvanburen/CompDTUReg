@@ -20,6 +20,11 @@
 startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 
   load(x)
+  genename <- genename
+  Y <- Y
+  Group <- Group
+  YInfRep <- YInfRep
+  mean.withinhat <- mean.withinhat
   if(runWithME==TRUE){
     res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       extraPredictors = extraPredictors)
@@ -90,13 +95,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
       if(!is.null(extraPredictors)){
         #Stack the new predictor matrix the necessary number of times
         ExtraPredMatrixInfReps <- do.call(rbind, replicate(ninfreps, extraPredictors, simplify=FALSE))
-        XAlt <- model.matrix(~Group2InfReps + ExtraPredMatrixInfReps)
+        XAlt <- stats::model.matrix(~Group2InfReps + ExtraPredMatrixInfReps)
 
         #Reassign column names to match colunm names of extraPredictors
         colnames(XAlt)[ncol(XAlt):(ncol(XAlt) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
         XAltT <- t(XAlt)
       }else{
-        XAlt <- model.matrix(~Group2InfReps)
+        XAlt <- stats::model.matrix(~Group2InfReps)
         XAltT <- t(XAlt)
       }
 
@@ -112,13 +117,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
       if(!is.null(extraPredictors)){
         ExtraPredMatrixInfReps <- do.call(rbind, replicate(ninfreps, extraPredictors, simplify=FALSE))
-        XNull <- model.matrix(~ExtraPredMatrixInfReps)
+        XNull <- stats::model.matrix(~ExtraPredMatrixInfReps)
 
         #Reassign column names to match colunm names of extraPredictors
         colnames(XNull)[ncol(XNull):(ncol(XNull) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
         XNullT <- t(XNull)
       }else{
-        XNull <- model.matrix(~1, data = Group2InfReps)
+        XNull <- stats::model.matrix(~1, data = Group2InfReps)
         XNullT <- t(XNull)
       }
 
@@ -178,13 +183,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
   }else{
     if(!is.null(extraPredictors)){
-      XAlt <- model.matrix(~Group2 + extraPredictors)
+      XAlt <- stats::model.matrix(~Group2 + extraPredictors)
 
       #Reassign column names to match colunm names of extraPredictors
       colnames(XAlt)[ncol(XAlt):(ncol(XAlt) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
       XAltT <- t(XAlt)
     }else{
-      XAlt <- model.matrix(~Group2)
+      XAlt <- stats::model.matrix(~Group2)
       XAltT <- t(XAlt)
     }
     ns <- nrow(Y)
@@ -193,14 +198,14 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     SigmaTildeAlt <- (crossprod(pie1))/ns
 
     if(!is.null(extraPredictors)){
-      XNull <- model.matrix(~1 + extraPredictors, data = Group2)
+      XNull <- stats::model.matrix(~1 + extraPredictors, data = Group2)
 
       #Reassign column names to match column names of extraPredictors
       colnames(XNull)[ncol(XNull):(ncol(XNull) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
 
       XNullT <- t(XNull)
     }else{
-      XNull <- model.matrix(~1, data = Group2)
+      XNull <- stats::model.matrix(~1, data = Group2)
       XNullT <- t(XNull)
     }
 
@@ -271,7 +276,7 @@ calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, lm_model_fit = NULL, q
 
   #See the Multivariate ANOVA Testing pdf document (from the SAS help file) for the necessary formulas
   #This proved to be the easiest way to calculate the statistic and are confirmed to match R's anova.mlm function
-  #v <- nsamp - ncol(model.matrix(lm_model_fit))
+  #v <- nsamp - ncol(stats::model.matrix(lm_model_fit))
 
   if(!is.na(df_residual)){
     v <- df_residual
@@ -299,6 +304,6 @@ calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, lm_model_fit = NULL, q
   }
   numdf_pillai <- s * piece2
   denomdf_pillai <- s * piece1
-  pval_pillai <- 1-pf(fstat_pillai, df1 = numdf_pillai, df2 = denomdf_pillai)
+  pval_pillai <- 1-stats::pf(fstat_pillai, df1 = numdf_pillai, df2 = denomdf_pillai)
   return(pval_pillai)
 }

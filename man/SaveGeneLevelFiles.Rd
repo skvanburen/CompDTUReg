@@ -6,7 +6,6 @@
 \usage{
 SaveGeneLevelFiles(
   directory,
-  save_dir,
   GeneLevelFilesSaveDir,
   curr_part_num,
   DRIMSeqFiltering = TRUE,
@@ -31,6 +30,8 @@ using the OtherGroups approach we had considered and generally should not be use
 \item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE if the replicates are bootstrap samples}
 
 \item{CLE}{is TRUE if the \code{\link{CorrectLowExpression}} procedure is to be used to correct low expression and FALSE if not.  Should be the same value in both \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.}
+
+\item{CLEParam}{is the parameter that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)}
 }
 \value{
 The function saves gene-level .RData files within the subdirectory \code{GeneLevelFilesSaveDir} of \code{save_dir} that contain all necessary

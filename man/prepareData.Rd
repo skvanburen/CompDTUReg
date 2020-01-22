@@ -20,6 +20,8 @@ prepareData(
 
 \item{counts}{is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level quantification estimates. Column names should not include "Cnt".}
 
+\item{lengths}{is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level effective length information. Column names should not include "Length".}
+
 \item{tx2gene}{is a dataframe that matches transcripts to genes. Can be created by \code{\link{maketx2gene}}.}
 
 \item{nsamp}{is the number of biological samples/replicates used in the analysis}
@@ -28,11 +30,9 @@ prepareData(
 and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 the observations don't correspond to unique biological samples.}
 
+\item{infReps}{is a character variable indicating what kind of inferential replicates (if any) are to be analyzed by the current function call.  Values to be used should be "none", "Boot", and "Gibbs".  Default is "none".}
+
 \item{samps}{is an optional vector containing the sample names.  Need to specify this if sample names are not just paste0("Sample", 1:nsamp) without any missing.}
-
-\item{length}{is a dataframe with nsamp+1 columns, with names Sample1, Sample2, etc and a column for tx_id (that often comes from the rownames).  Rows are transcript level effective length information. Column names should not include "Length".}
-
-\item{CompMI}{is a TRUE/FALSE corresponding to whether datasets for the multiple imputation based analysis are being used.  This will add columns for transcripts that may be missing in the inferential replicates that were't missing in the non-inferential replicate data.  Default is FALSE.}
 }
 \value{
 list of length 2 with the first element being the abundance data (abGeneTempF) and the second being the count data (cntGeneTempF) for use with \code{\link{generateData}}

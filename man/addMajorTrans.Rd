@@ -20,6 +20,8 @@ addMajorTrans(
 \item{cntGeneTempF}{data.frame of count information that will have the major transcript info added to it. Usually also contains length information.}
 
 \item{abDatasets}{list of length genestouse containing genewise information per sample.  Also contains the major transcript information as an attribute.  Generally comes from the output of \code{\link{generateData}}.}
+
+\item{CompMI}{is a TRUE/FALSE corresponding to whether datasets for the multiple imputation based analysis are being used.  This will add columns for transcripts that may be missing in the inferential replicates that were't missing in the non-inferential replicate data.  Default is FALSE.}
 }
 \value{
 a list containing abGene and cntGene dataframes with the major transcript information added
