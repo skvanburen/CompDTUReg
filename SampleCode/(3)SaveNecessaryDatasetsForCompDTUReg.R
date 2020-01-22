@@ -26,8 +26,8 @@ nparts <- 10
 
 #array_value needs to span the number of parts the data is split up into, specified by nparts above
 #An alternative to the array job would be looping over each part number in 1:nparts, but it could be time consuming especially
-  #with a large number of samples so we recommend the array method if possible
-  #if using a loop, ensure curr_part_num gets changed and set properly
+  #with a large number of samples so we recommend a procedure that can run each part separately, such as the array approach mentioned here
+  #if looping over "array_val" instead, ensure curr_part_num gets changed and set properly
 array_val <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 curr_part_num <- array_val
 
@@ -82,18 +82,21 @@ CLE <- TRUE
 
 if(useInferentialReplicates==TRUE){
   #Will save necessary temporary files that contain all inferential replicates for all biological samples/replicates for a specific set of genes
-  SaveFullinfRepDat(SalmonFilesDir = SalmonFilesDir, save_dir = save_dir, GibbsSamps = GibbsSamps,
+  SaveFullinfRepDat(SalmonFilesDir = SalmonFilesDir, QuantSalmon = QuantSalmon, abDatasetsFiltered = abDatasetsFiltered, save_dir = save_dir, GibbsSamps = GibbsSamps,
                     filteredgenenames = filteredgenenames, cntGene = cntGene, key = key, nparts = nparts, curr_part_num = curr_part_num)
 
+  print("Saving of Full Inferential Replicate datasets is complete")
   #Save the within subject covariance matricies (on the ilr scale)
   SaveWithinSubjCovMatrices(directory = def_wd, save_dir = save_dir, GibbsSamps = GibbsSamps, curr_part_num = curr_part_num, nsamp = nsamp,
                             CLE = CLE)
+  print("Saving of within subject covariance matrices is complete")
 
 }
 
 #Save the files that will be directly loaded to run CompDTUReg, with each gene having a separate file
   #If a file already exists for that gene, the function will skip resaving that one to save time
-SaveGeneLevelFiles(directory = def_wd, GeneLevelFilesSaveDir = GeneLevelFilesSaveDir, useInferentialReplicates = useInferentialReplicates, GibbsSamps = GibbsSamps)
+SaveGeneLevelFiles(directory = def_wd, GeneLevelFilesSaveDir = GeneLevelFilesSaveDir, curr_part_num = curr_part_num,
+                   useInferentialReplicates = useInferentialReplicates, GibbsSamps = GibbsSamps)
 
 
 

@@ -2,6 +2,7 @@
 library(CompDTUReg)
 
 #def_wd is the top level directory where files will be saved
+  #Modify it to wherever you would like the files to be saved
 def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
 if(!dir.exists(def_wd)){
   dir.create(def_wd)
@@ -19,17 +20,18 @@ SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 #Specify location of annotation to use in maketx2gene
 #GENCODE annotations can be downloaded from https://www.gencodegenes.org/human/
 #We used the annotations for the reference chromosomes only
-txdb_loc <- "~/gencode.v27.annotation.gtf.gz"
+txdb_loc <- "/Users/Scott/Documents/Dissertation Data/Gencodev27/gencode.v27.annotation.gtf.gz"
 
 
 
 #Construct a cluster from parallel package for possible use later.  For no parallelization, use makeCluster(1)
-clust <- makeCluster(1)
+clust <- parallel::makeCluster(1)
 
 #Build tx2gene dataframe matching transcripts to genes using GENCODE if it doesn't exist
+#Will take no more than a few minutes to run
 maketx2gene(txdb_loc = txdb_loc)
 
-#Ensure new tx2gene object can be loaded and load it
+#Load tx2gene object that was just created
 load("tx2gene.RData")
 
 
@@ -47,7 +49,7 @@ countsFromAbundance <- "scaledTPM"
 
 
 #List of Salmon quantification files, which end in .sf
-QuantFiles <- mixedsort(list.files(pattern = ".sf", recursive = TRUE, full.names = TRUE))
+QuantFiles <- gtools::mixedsort(list.files(pattern = ".sf", recursive = TRUE, full.names = TRUE))
 
 #Names of each element in QuantFiles must be set to "Sample1", "Sample2", etc even if they are not unique biological samples
   #This is because this is how the code will expect the columns to be named
@@ -80,7 +82,7 @@ key$Condition <- relevel(as.factor(key$Condition), ref = 1)
 
 #Use tximport to load in the results that have been pre-quantified by salmon
   #Drop inferential replicates for now, as they will be read in in file (2)
-QuantSalmon <- tximport(QuantFiles, type = "salmon", txOut = TRUE, ignoreTxVersion = FALSE,
+QuantSalmon <- tximport::tximport(QuantFiles, type = "salmon", txOut = TRUE, ignoreTxVersion = FALSE,
                         countsFromAbundance = countsFromAbundance, dropInfReps = TRUE)
 fulltransnames <- rownames(QuantSalmon$abundance) #transcript names
 
@@ -90,11 +92,12 @@ save(QuantSalmon, QuantFiles, key, fulltransnames, countsFromAbundance,
       file = paste0(SalmonFilesDir, "SalmonData.RData"))
 
 
-
+#Reset working directory to value specified by def_wd
 setwd(def_wd)
 
 #Files will save to def_wd
   #These will be unfiltered lists with the data with each gene as a separate element
+#This code will likely take around 20-30 minutes to run
 sumToGene(QuantSalmon = QuantSalmon, tx2gene = tx2gene, clust = clust, key = key,
           countsFromAbundance = countsFromAbundance)
 
@@ -105,9 +108,11 @@ sumToGene(QuantSalmon = QuantSalmon, tx2gene = tx2gene, clust = clust, key = key
 #See DRIMSeq Paper for more information
 ##################################################################
 #Load dataframe that contains quantification results for each transcript(rows) and sample (column) along with other information
+  #Output by sumToGene above
 load("abGene.RData")
 
 #Load list of dataframes that separates data by gene, with element in the list being a data frame of expression for that gene
+  #Output by sumToGene above
   #Within this data frame, rows are samples and columns are transcripts
 load("abDatasets.RData")
 
@@ -147,8 +152,9 @@ min_gene_expr <- 10
   #Set to a character vector in the form of key$Identifier, for example ("Sample1", "Sample5", etc)
 sampstouse <- key$Identifier
 
-DRIMSeqFilter(cntGene = cntGene, key = key, min_samps_feature_expr = min_samps_feature_expr, min_feature_expr = min_feature_expr,
+#Should take somewhere around 5 minutes to run with 10 samples
+DRIMSeqFilter(abGene = abGene, cntGene = cntGene, key = key, min_samps_feature_expr = min_samps_feature_expr, min_feature_expr = min_feature_expr,
               min_samps_feature_prop = min_samps_feature_prop, min_feature_prop = min_feature_prop, min_samps_gene_expr = min_samps_gene_expr,
-              min_gene_expr = min_gene_expr, sampstouse = sampstouse)
+              min_gene_expr = min_gene_expr, sampstouse = sampstouse, tx2gene = tx2gene, countsFromAbundance = countsFromAbundance)
 
 

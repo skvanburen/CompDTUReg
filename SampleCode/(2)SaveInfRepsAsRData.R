@@ -25,7 +25,7 @@ array_val <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 #Should match the number of rows in key from (1)
 nsamp <- 10
 
-QuantFiles <- mixedsort(list.files(pattern = ".sf", recursive = TRUE, full.names = TRUE))
+QuantFiles <- gtools::mixedsort(list.files(pattern = ".sf", recursive = TRUE, full.names = TRUE))
 
 #Names of each element in QuantFiles must be set to "Sample1", "Sample2", etc even if they are not unique biological samples
 #This is because this is how the code will expect the columns to be named, just like for the key object
@@ -33,7 +33,7 @@ QuantFiles <- mixedsort(list.files(pattern = ".sf", recursive = TRUE, full.names
 #in the format "Sample1", "Sample2", etc
 names(QuantFiles) <- paste0("Sample", 1:nsamp)
 
-QuantFiles2 <- QuantFiles[mixedsort(names(QuantFiles))]
+QuantFiles2 <- QuantFiles[gtools::mixedsort(names(QuantFiles))]
 
 array_val2 <- array_val %% nsamp
 if(array_val2==0){
@@ -57,5 +57,7 @@ countsFromAbundance <- "scaledTPM"
 
 
 #Files will be saved to SalmonFilesDir/BootSamps for bootstrap samples or /GibbsSamps for Gibbs samples
-SaveInfRepDataAsRData(curr_samp = curr_samp, curr_file_loc = curr_file_loc, GibbsSamps = GibbsSamps,
+#Should take something like 15 minutes to run per sample, leading to the recommendation that each sample
+  #be run separately (such as part of an array job) is possible
+SaveInfRepDataAsRData(curr_samp = curr_samp, tx2gene = tx2gene, curr_file_loc = curr_file_loc, GibbsSamps = GibbsSamps,
                      countsFromAbundance = countsFromAbundance, direc_to_save_res = SalmonFilesDir)
