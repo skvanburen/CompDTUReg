@@ -31,7 +31,7 @@ using the OtherGroups approach we had considered and generally should not be use
 
 \item{CLE}{is TRUE if the \code{\link{CorrectLowExpression}} procedure is to be used to correct low expression and FALSE if not.  Should be the same value in both \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.}
 
-\item{CLEParam}{is the parameter that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)}
+\item{CLEParam}{is the parameter (betwen 0 and 1) that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)}
 }
 \value{
 The function saves gene-level .RData files within the subdirectory \code{GeneLevelFilesSaveDir} of \code{save_dir} that contain all necessary

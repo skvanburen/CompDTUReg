@@ -1752,7 +1752,7 @@ loadRData <- function(fileName){
 #' @return This function will save the sample-specific mean and covariance values across all inferential replicates on the \code{\link{ilr}} scale for all genes within the current part number \code{curr_part_num}.  These files will be saved within the subdirectory
 #' "ilrMeansCovs/" in the \code{save_dir} folder and will be used by \code{\link{SaveGeneLevelFiles}} if present.
 #' @export SaveWithinSubjCovMatrices
-SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part_num, nsamp, DRIMSeqFiltering = TRUE, CLE = TRUE, CLEParam = 0.01){
+SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part_num, nsamp, DRIMSeqFiltering = TRUE, CLE = TRUE, CLEParam = 0.05){
   #Directory where the infRepabDatasets are saved by SaveFullinfRepDat
   abDatasetsSubDir <- "infRepsabDatasets/"
 
@@ -1976,7 +1976,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
 #' @details See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 #' @export SaveGeneLevelFiles
 SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE, GibbsSamps,
-                               CLE = TRUE, CLEParam = 0.01){
+                               CLE = TRUE, CLEParam = 0.05){
   setwd(directory)
 
 
@@ -2158,17 +2158,17 @@ SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, 
 
 #' Correct sample/gene combinations that have expression values of 0 or close to 0 to stabilize results
 #' @param y is the data for the current gene/sample combination
-#' @param CLEParam is the parameter that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)
-#' @details The CLEParam parameter a works as follows: any TPM value that is less than `a' percent of the total gene-level
-#' expression for the sample is replaced by `a' percent of this expression.  Mathematically, let \eqn{T_{ij}} be the TPM value for
-#' transcript $j=1,..., D$ for sample $i = 1,..., n$ within a given gene with $D$ transcripts.  Any \deqn{T_{ij} < a * (T_{i1}+...+T_{iD})} will be replaced by \deqn{a * (T_{i1}+...+T_{iD})}
-#'  This procedure results in relative transcript abundance fractions (RTAFs)
-#' being zero only when every \eqn{T_{ij}} is equal to zero.  The value \eqn{a} can be increased or decreased to result in more or less modification to
+#' @param CLEParam is the parameter (betwen 0 and 1) that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)
+#' @details The CLEParam parameter a works as follows: any TPM value that is less than `100*a' percent of the total gene-level
+#' expression for the sample is replaced by `100*a' percent of this expression.  Mathematically, let \eqn{T_{ij}} be the TPM value for
+#' transcript $j=1,..., D$ for sample $i = 1,..., n$ within a given gene with $D$ transcripts.  Any \deqn{T_{ij} < a * (T_{i1}+...+T_{iD})} will be replaced by \deqn{a * (T_{i1}+...+T_{iD})}.
+#' This procedure results in relative transcript abundance fractions (RTAFs)
+#' being zero only when every \eqn{T_{ij}} is equal to zero.  The value \eqn{a} could be increased or decreased to result in more or less modification to
 #' the observed TPM values.  As $a$ increases, the proportions are driven closer to each other, with each converging towards \eqn{(1/D)} as \eqn{a} converges to 1
-#' (and each equal to \eqn{(1/D)} for \eqn{a > 1}).  We find \deqn{a=0.01} is a good compromise that is large enough to stabilize the ilr coordinates sufficiently while
-#' additionally not over-modifying the observed data, and use this value by default for all \emph{CompDTU} and \emph{CompDTUme} results.
+#' (and each equal to \eqn{(1/D)} for \eqn{a > 1}).  We find \deqn{a=0.05} is a good compromise that is large enough to stabilize the ilr coordinates sufficiently while
+#' additionally not over-modifying the observed data, and use this value by default for all \emph{CompDTU} and \emph{CompDTUme} results. We recommend keeping this value at the default of 0.05.
 #' @export CorrectLowExpression
-CorrectLowExpression <- function(y, CLEParam = 0.01){
+CorrectLowExpression <- function(y, CLEParam = 0.05){
   if(is.null(y)){
     return(NULL)
   }
@@ -2186,7 +2186,7 @@ CorrectLowExpression <- function(y, CLEParam = 0.01){
 
 }
 
-CorrectLowExpressionHelper <- function(x, CLEParam = 0.01){
+CorrectLowExpressionHelper <- function(x, CLEParam = 0.05){
   #print(x)
   # if(nrow(x)!=1){
   #   stop("Number of rows is not 1")

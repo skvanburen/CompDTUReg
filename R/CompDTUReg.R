@@ -17,19 +17,24 @@
 #' the current dataset being used.
 #'
 #' @export startCompDTUReg
-startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
+startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest = FALSE, NullDesign = NULL, AltDesign = NULL){
 
+  if(customHypTest==TRUE & (is.null(NullDesign) | is.null(AltDesign))){
+    stop("To conduct a custom hypothesis test, both NullDesign and AltDesign must be specified")
+  }
+  
   load(x)
   genename <- genename
   Y <- Y
   Group <- Group
-  YInfRep <- YInfRep
-  mean.withinhat <- mean.withinhat
   if(runWithME==TRUE){
+    YInfRep <- YInfRep
+    mean.withinhat <- mean.withinhat
     res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
-                      extraPredictors = extraPredictors)
+                      extraPredictors = extraPredictors, customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }else{
-    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, extraPredictors = extraPredictors)
+    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, extraPredictors = extraPredictors, 
+                      customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }
   return(res)
 }
@@ -56,7 +61,7 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 #'
 #' @details  This function is run separately for each gene and the easiest way to run it will be to follow the pipeline given in the SampleCode folder of the package.
 #' In particular the easiest way to call this is to use the helper function \code{\link{startCompDTUReg}}, which loads results from \code{\link{SaveGeneLevelFiles}}.
-#' These results contain all input arguments aside from \code{extraPredictors} (if any), and input arguments are automatically set by \code{\link{startCompDTUReg}}.
+#' These results contain all input arguments aside from \code{extraPredictors} (if any) or custom specified null and alternative hypothesis design matrices, and input arguments are automatically set by \code{\link{startCompDTUReg}}.
 #' See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 #'
 #' @return a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
@@ -64,13 +69,19 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL){
 #'
 #' @export CompDTUReg
 CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
-                       extraPredictors = NULL){
+                       extraPredictors = NULL, customHypTest = FALSE, NullDesign = NULL, AltDesign = NULL){
+  
+  if(customHypTest==TRUE & (is.null(NullDesign) | is.null(AltDesign))){
+    stop("To conduct a custom hypothesis test, both NullDesign and AltDesign must be specified")
+  }
+  
   if(length(unique(Group))!=length(levels(Group))){
     stop("Check the number of levels in the Group factor, there appear to be more levels than are used and this will result in incorrect inference.")
   }
 
   Group2 <- Group
   nsamp <- length(Group2)
+  ncond <- length(unique(Group2))
   if(runWithME==TRUE){
     ninfreps <- nrow(YInfRep)/length(Group)
     # if(is.null(ninfreps)){
@@ -78,21 +89,22 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     # }
     if(is.null(YInfRep)){
       gene_id <- genename
-      ret <- data.frame(gene_id, pval_CompDTUme = NA,
-                        MENullCovNegVar = NA, MEAltCovNegVar = NA,
-                        numYs = NA,
-                        nsamp = NA, ncond = NA, stringsAsFactors = F)
-      ret$numYs <- ncol(Y)
-      ret$nsamp <- nsamp
-      ncond <- length(unique(Group2))
-      ret$ncond <- ncond
+      ret <- data.frame(gene_id, pval_CompDTUme = NA, FStat = NA, NumDF = NA, DenomDF = NA, stringsAsFactors = F)
 
       return(ret)
     }else{
       Group2InfReps <- rep(Group2, ninfreps)
 
-      #Repeat the extraPredictors the necessary number of times
-      if(!is.null(extraPredictors)){
+      if(!is.null(AltDesign)){
+        #XAlt <- AltDesign
+        XAlt <- do.call(rbind, replicate(ninfreps, AltDesign, simplify=FALSE))
+        
+        if(nrow(XAlt)!=nrow(YInfRep)){
+          stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you input a proper design matrix for AltDesign?")
+        }
+        
+      }else if(!is.null(extraPredictors)){
+    #Repeat the extraPredictors the necessary number of times
         #Stack the new predictor matrix the necessary number of times
         ExtraPredMatrixInfReps <- do.call(rbind, replicate(ninfreps, extraPredictors, simplify=FALSE))
         XAlt <- stats::model.matrix(~Group2InfReps + ExtraPredMatrixInfReps)
@@ -104,6 +116,8 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
         XAlt <- stats::model.matrix(~Group2InfReps)
         XAltT <- t(XAlt)
       }
+      
+
 
 
       ns <- nrow(YInfRep)
@@ -115,7 +129,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
       #resAlt <- fastLmSVB(Y = YInfRep, X = XAlt)
       #SigmaTildeAltNewModeling <- resAlt$EstCov
 
-      if(!is.null(extraPredictors)){
+      if(!is.null(NullDesign)){
+        XNull <- do.call(rbind, replicate(ninfreps, NullDesign, simplify=FALSE))
+        
+        if(nrow(XNull)!=nrow(YInfRep)){
+          stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you input a proper design matrix for NullDesign?")
+        }
+      }else if(!is.null(extraPredictors)){
         ExtraPredMatrixInfReps <- do.call(rbind, replicate(ninfreps, extraPredictors, simplify=FALSE))
         XNull <- stats::model.matrix(~ExtraPredMatrixInfReps)
 
@@ -133,45 +153,34 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
       SigmaTildeNullNewModeling <- (crossprod(pie2))/ns
 
       gene_id <- genename
-      ret <- data.frame(gene_id, pval_CompDTUme = NA,
-                        MENullCovNegVar = NA, MEAltCovNegVar = NA,
-                        numYs = NA,
-                        nsamp = NA, ncond = NA, stringsAsFactors = F)
-      ret$numYs <- ncol(Y)
-      ret$nsamp <- nsamp
-      ncond <- length(unique(Group2))
-      ret$ncond <- ncond
+      ret <- data.frame(gene_id, pval_CompDTUme = NA, FStat = NA, NumDF = NA, DenomDF = NA, stringsAsFactors = F)
 
       if(!is.null(mean.withinhat)){
         UpdatedCovAlt <- SigmaTildeAltNewModeling - mean.withinhat
         UpdatedCovNull <- SigmaTildeNullNewModeling - mean.withinhat
 
+        #df_residual needs to be based on nsamp not nreps or nreps*nsamp
         statement1 <- sum(diag(UpdatedCovAlt)<=0) !=0
-        if(statement1==TRUE){
-          #print(paste0("UpdatedCovAlt for the new modeling approach has negative variance terms for gene ", gene_id))
-          ret$MEAltCovNegVar <- TRUE
-        }else{
-          ret$MEAltCovNegVar <- FALSE
-        }
         statement2 <- sum(diag(UpdatedCovNull)<=0) !=0
-        if(statement2==TRUE){
-          #print(paste0("UpdatedCovNull for the new modeling approach has negative variance terms for gene ", gene_id))
-          ret$MENullCovNegVar <- TRUE
-        }else{
-          ret$MENullCovNegVar <- FALSE
-        }
-
-        #df_residual needs to be based on nsamp not nreps or nreps*nsamp (which is equal to nrow(YGibbs))
+        
         if((statement1==TRUE | statement2==TRUE)){
           ret$pval_CompDTUme <- NA
         }else{
-          qq <- ncond - 1
-          pval_CompDTUme <- tryCatch(calcPillaiPval(SigmaTildeNull = UpdatedCovNull, SigmaTildeAlt = UpdatedCovAlt,
+          if(customHypTest==TRUE){
+            qq <- ncol(XAlt - XNull)
+          }else{
+            qq <- ncond - 1
+          }
+          
+          CompDTUmeRes <- tryCatch(calcPillaiPval(SigmaTildeNull = UpdatedCovNull, SigmaTildeAlt = UpdatedCovAlt,
                                                                   lm_model_fit = NULL, q = qq, nsamp = nsamp, df_residual = nsamp - ncol(XAlt)),
                                                    error = function(x){})
 
-          if(is.null(pval_CompDTUme)==FALSE){
-            ret$pval_CompDTUme <- pval_CompDTUme
+          if(is.null(CompDTUmeRes)==FALSE){
+            ret$pval_CompDTUme <- CompDTUmeRes$pval_pillai
+            ret$FStat <- CompDTUmeRes$FStat
+            ret$NumDF <- CompDTUmeRes$NumDF
+            ret$DenomDF <- CompDTUmeRes$DenomDF
           }
 
 
@@ -182,7 +191,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     }
 
   }else{
-    if(!is.null(extraPredictors)){
+    if(!is.null(AltDesign)){
+      XAlt <- AltDesign
+      
+      if(nrow(XAlt)!=nrow(Y)){
+        stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you input a proper design matrix for AltDesign?")
+      }
+    } else if(!is.null(extraPredictors)){
       XAlt <- stats::model.matrix(~Group2 + extraPredictors)
 
       #Reassign column names to match colunm names of extraPredictors
@@ -197,7 +212,13 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     pie1 <- Y - XAlt%*%bhatalt
     SigmaTildeAlt <- (crossprod(pie1))/ns
 
-    if(!is.null(extraPredictors)){
+    if(!is.null(NullDesign)){
+      XNull <- NullDesign
+      
+      if(nrow(XNull)!=nrow(Y)){
+        stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you input a proper design matrix for NullDesign?")
+      }
+    }else if(!is.null(extraPredictors)){
       XNull <- stats::model.matrix(~1 + extraPredictors, data = Group2)
 
       #Reassign column names to match column names of extraPredictors
@@ -218,21 +239,23 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
 
     gene_id <- genename
-    ret <- data.frame(gene_id, pval_CompDTU = NA,
-                      numYs = NA,
-                      nsamp = NA, ncond = NA, stringsAsFactors = F)
-    ret$numYs <- ncol(Y)
-    ret$nsamp <- nsamp
-    ncond <- length(unique(Group2))
-    ret$ncond <- ncond
+    ret <- data.frame(gene_id, pval_CompDTU = NA,  FStat = NA, NumDF = NA, DenomDF = NA, stringsAsFactors = F)
 
-    qq <- ncond - 1
-    pval_CompDTU <- tryCatch(calcPillaiPval(SigmaTildeNull = SigmaTildeNull, SigmaTildeAlt = SigmaTildeAlt,
+    if(customHypTest==TRUE){
+      qq <- ncol(XAlt - XNull)
+    }else{
+      qq <- ncond - 1
+    }
+    
+    CompDTURes <- tryCatch(calcPillaiPval(SigmaTildeNull = SigmaTildeNull, SigmaTildeAlt = SigmaTildeAlt,
                                            lm_model_fit = NULL, q = qq, nsamp = nsamp, df_residual = nsamp - ncol(XAlt)),
                             error = function(x){})
 
-    if(is.null(pval_CompDTU)==FALSE){
-      ret$pval_CompDTU <- pval_CompDTU
+    if(is.null(CompDTURes)==FALSE){
+      ret$pval_CompDTU <- CompDTURes$pval_pillai
+      ret$FStat <- CompDTURes$FStat
+      ret$NumDF <- CompDTURes$NumDF
+      ret$DenomDF <- CompDTURes$DenomDF
     }
 
 
@@ -300,10 +323,12 @@ calcPillaiPval <- function(SigmaTildeNull, SigmaTildeAlt, lm_model_fit = NULL, q
   fstat_pillai <- (piece1/piece2) * (pill_stat/(s - pill_stat))
 
   if(fstat_pillai < 0){
-    return(NA)
+    return(list(FStat = NA, NumDF = NA, DenomDF = NA, pval_pillai = NA))
   }
   numdf_pillai <- s * piece2
   denomdf_pillai <- s * piece1
   pval_pillai <- 1-stats::pf(fstat_pillai, df1 = numdf_pillai, df2 = denomdf_pillai)
-  return(pval_pillai)
+  
+  
+  return(list(FStat = fstat_pillai, NumDF = numdf_pillai, DenomDF = denomdf_pillai, pval_pillai = pval_pillai))
 }

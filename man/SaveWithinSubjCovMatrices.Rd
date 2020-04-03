@@ -31,7 +31,7 @@ Specified directory should be the same in \code{\link{SaveFullinfRepDat}}, \code
 
 \item{CLE}{is TRUE if the \code{\link{CorrectLowExpression}} procedure is to be used to correct low expression and FALSE if not.  Should be the same value in both \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.}
 
-\item{CLEParam}{is the parameter that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)}
+\item{CLEParam}{is the parameter (betwen 0 and 1) that controls the correction threshold (see details of \code{\link{CorrectLowExpression}} for more information)}
 }
 \value{
 This function will save the sample-specific mean and covariance values across all inferential replicates on the \code{\link{ilr}} scale for all genes within the current part number \code{curr_part_num}.  These files will be saved within the subdirectory
