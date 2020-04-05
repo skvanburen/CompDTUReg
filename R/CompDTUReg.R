@@ -23,6 +23,17 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
     stop("To conduct a custom hypothesis test, both NullDesign and AltDesign must be specified")
   }
   
+  if(customHypTest==FALSE & (!is.null(NullDesign) | !is.null(AltDesign))){
+    stop("You have input a custom design matrix but customHypTest is FALSE.  Set customHypTest to TRUE and ensure both NullDesign and AltDesign are specified to run a custom hypothesis test.")
+  }
+  
+  
+  if(!is.null(NullDesign) & !is.null(AltDesign) ){
+    if(ncol(NullDesign)>=ncol(AltDesign)){
+      stop("The Alternative design matrix does not have more predictors than the null.  Check the specification of the two design matrices.")
+    }
+  }
+  
   load(x)
   genename <- genename
   Y <- Y
@@ -48,52 +59,99 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
 #' @param genename The name of the current gene to run the method on.
 #' @param Y corresponds is the ilr transformed matrix of response values for the non-inferential replicate data.  Matrix
 #' should have a number of rows corresponding to the number of samples and a number of columns corresponding to the number of ilr coordinates
-#' (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model with measurement error, as it is not used.
-#' @param Group A vector of condition assignments corresponding to the samples
+#' (which one less than the number transcripts remaining after filtering).  Rows need to be in the same order as either Group or the design matrices specified by AltDesign and NullDesign.  Set to NULL if you are running the model with measurement error, as it is not used.
+#' @param Group A vector of condition assignments corresponding to the samples.  Needs to be ordered the same as Y or YInfRep.  Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.
 #' @param runWithME is TRUE/FALSE indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 #' and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.
 #' @param YInfRep corresponds is the ilr transformed matrix of response values for the inferential replicate data.  Matrix
 #' should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
-#' (which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.
+#' (which is one less than the number transcripts remaining after filtering).  Rows must be ordered as Sample1InfRep1, Sample2InfRep1, Sample3Infrep1, etc. NOT Sample1InfRep1, Sample1InfRep2, Sample1InfRepe,  etc.  Set to NULL if you are running the model without measurement error, as it is not used.
 #' @param mean.withinhat is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).
 #' @param  extraPredictors is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
-#' The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.
+#' The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed). Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.
+#' @param customHypTest should be set to TRUE if custom design matricies will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group and extraPredictors arguments must be set to NULL.  Default is FALSE.
+#' @param AltDesign specifies the design matrix corresponding to the alternative hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).
+#' @param NullDesign specifies the design matrix corresponding to the null hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).
 #'
 #' @details  This function is run separately for each gene and the easiest way to run it will be to follow the pipeline given in the SampleCode folder of the package.
-#' In particular the easiest way to call this is to use the helper function \code{\link{startCompDTUReg}}, which loads results from \code{\link{SaveGeneLevelFiles}}.
-#' These results contain all input arguments aside from \code{extraPredictors} (if any) or custom specified null and alternative hypothesis design matrices, and input arguments are automatically set by \code{\link{startCompDTUReg}}.
+#' In particular if gene-level files created from \code{\link{SaveGeneLevelFiles}} are used the easiest way to use this is to use the helper function \code{\link{startCompDTUReg}}, which loads the gene-level results.
+#' These gene-level files contain all input arguments aside from \code{extraPredictors} (if any) or custom specified null and alternative hypothesis design matrices, and input arguments are automatically set by \code{\link{startCompDTUReg}}.
 #' See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 #'
 #' @return a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
 #' the current dataset being used.
 #'
 #' @export CompDTUReg
-CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
+CompDTUReg <- function(genename, Y = NULL, Group = NULL, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
                        extraPredictors = NULL, customHypTest = FALSE, NullDesign = NULL, AltDesign = NULL){
+  
+  if(is.null(Group) & ((is.null(NullDesign) | is.null(AltDesign)))){
+      stop("If Group is not specified design matrices must be specified under the null and alternative hypothesis using the NullDesign and AltDesign arguments")
+  }
   
   if(customHypTest==TRUE & (is.null(NullDesign) | is.null(AltDesign))){
     stop("To conduct a custom hypothesis test, both NullDesign and AltDesign must be specified")
   }
   
-  if(length(unique(Group))!=length(levels(Group))){
-    stop("Check the number of levels in the Group factor, there appear to be more levels than are used and this will result in incorrect inference.")
+  if(customHypTest==FALSE & (!is.null(NullDesign) | !is.null(AltDesign))){
+    stop("You have input a custom design matrix but customHypTest is FALSE.  Set customHypTest to TRUE and ensure both NullDesign and AltDesign are specified to run a custom hypothesis test.")
   }
+  
+  if(!is.null(NullDesign) & !is.null(AltDesign) ){
+    if(ncol(NullDesign)>=ncol(AltDesign)){
+      stop("The Alternative design matrix does not have more predictors than the null.  Check the specification of the two design matrices.")
+    }
+  }
+  
+  #If the above checks on the custom specified design matrices pass, set Group and extraPredictors to NULL if they were specified
+  if(customHypTest==TRUE & (!is.null(Group) | !is.null(extraPredictors))){
+    stop("If customHypTest is TRUE set both Group and extraPredictors to NULL")
+  }
+  
+  if(runWithME==TRUE & is.null(YInfRep)){
+    stop("You are attempting to run the CompDTUme model but YInfRep is NULL")
+  }
+  
+  if(runWithME==FALSE & is.null(Y)){
+    stop("You are attempting to run the CompDTU model but Y is NULL")
+  }
+  
+  if(runWithME==TRUE & !is.null(Y)){
+    stop("Set Y to be NULL if you are attempting to run the CompDTUme model")
+  }
+  
+  if(runWithME==FALSE & !is.null(YInfRep)){
+    stop("Set YInfRep to be NULL if you are attempting to run the CompDTU model")
+  }
+  
 
-  Group2 <- Group
-  nsamp <- length(Group2)
-  ncond <- length(unique(Group2))
+  if(customHypTest==FALSE){
+    
+    if(length(unique(Group))!=length(levels(Group))){
+      warning("Check the number of levels in the Group factor, there appear to be more possible levels than are actually used by the data and this will result in incorrect inference.")
+    }
+    
+    Group2 <- Group
+    nsamp <- length(Group2)
+    ncond <- length(unique(Group2))
+    
+  }else{
+    nsamp <- nrow(AltDesign)
+  }
+  
+
+
+
+
   if(runWithME==TRUE){
-    ninfreps <- nrow(YInfRep)/length(Group)
-    # if(is.null(ninfreps)){
-    #   stop("ninfreps used must be specified when running the CompME model")
-    # }
-    if(is.null(YInfRep)){
-      gene_id <- genename
-      ret <- data.frame(gene_id, pval_CompDTUme = NA, FStat = NA, NumDF = NA, DenomDF = NA, stringsAsFactors = F)
+    
+      if(customHypTest==FALSE){
+        ninfreps <- nrow(YInfRep)/length(Group)
+        Group2InfReps <- rep(Group2, ninfreps)
+      }else{
+        ninfreps <- nrow(YInfRep)/nrow(AltDesign)
+      }
 
-      return(ret)
-    }else{
-      Group2InfReps <- rep(Group2, ninfreps)
 
       if(!is.null(AltDesign)){
         #XAlt <- AltDesign
@@ -104,23 +162,30 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
         }
         
       }else if(!is.null(extraPredictors)){
-    #Repeat the extraPredictors the necessary number of times
+      #Repeat the extraPredictors the necessary number of times
         #Stack the new predictor matrix the necessary number of times
         ExtraPredMatrixInfReps <- do.call(rbind, replicate(ninfreps, extraPredictors, simplify=FALSE))
         XAlt <- stats::model.matrix(~Group2InfReps + ExtraPredMatrixInfReps)
 
         #Reassign column names to match colunm names of extraPredictors
         colnames(XAlt)[ncol(XAlt):(ncol(XAlt) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
-        XAltT <- t(XAlt)
+        
+        if(nrow(XAlt)!=nrow(YInfRep)){
+          stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you a proper matrix for extraPredictors and that the input Group variable has the correct number of samples?")
+        }
       }else{
         XAlt <- stats::model.matrix(~Group2InfReps)
-        XAltT <- t(XAlt)
+        
+        if(nrow(XAlt)!=nrow(YInfRep)){
+          stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure the input Group variable has the correct number of samples?")
+        }
       }
       
 
 
 
       ns <- nrow(YInfRep)
+      XAltT <- t(XAlt)
       bhatalt <- solve(crossprod(XAlt)) %*% (XAltT %*% YInfRep)
       pie1 <- YInfRep - (XAlt%*%bhatalt)
 
@@ -141,12 +206,19 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
         #Reassign column names to match colunm names of extraPredictors
         colnames(XNull)[ncol(XNull):(ncol(XNull) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
-        XNullT <- t(XNull)
+        
+        if(nrow(XNull)!=nrow(YInfRep)){
+          stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you a proper matrix for extraPredictors and that the input Group variable has the correct number of samples?")
+        }
       }else{
         XNull <- stats::model.matrix(~1, data = Group2InfReps)
-        XNullT <- t(XNull)
+        
+        if(nrow(XNull)!=nrow(YInfRep)){
+          stop("The number of rows of the design matrix under the null should match the number of samples and does not.  Are you sure the input Group variable has the correct number of samples?")
+        }
       }
 
+      XNullT <- t(XNull)
       bhatnull <- solve(crossprod(XNull)) %*% (XNullT %*% YInfRep)
       pie2 <- YInfRep - (XNull%*%bhatnull)
 
@@ -160,6 +232,8 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
         UpdatedCovNull <- SigmaTildeNullNewModeling - mean.withinhat
 
         #df_residual needs to be based on nsamp not nreps or nreps*nsamp
+        
+        #If there is a negative variance term, the pvalue for CompDTUme will be undefined
         statement1 <- sum(diag(UpdatedCovAlt)<=0) !=0
         statement2 <- sum(diag(UpdatedCovNull)<=0) !=0
         
@@ -167,7 +241,7 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
           ret$pval_CompDTUme <- NA
         }else{
           if(customHypTest==TRUE){
-            qq <- ncol(XAlt - XNull)
+            qq <- ncol(XAlt) - ncol(XNull)
           }else{
             qq <- ncond - 1
           }
@@ -188,26 +262,33 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
       }
       return(ret)
-    }
+    
 
-  }else{
+  }else if(runWithME==FALSE){
     if(!is.null(AltDesign)){
       XAlt <- AltDesign
       
       if(nrow(XAlt)!=nrow(Y)){
         stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you input a proper design matrix for AltDesign?")
       }
-    } else if(!is.null(extraPredictors)){
+    }else if(!is.null(extraPredictors)){
       XAlt <- stats::model.matrix(~Group2 + extraPredictors)
 
       #Reassign column names to match colunm names of extraPredictors
       colnames(XAlt)[ncol(XAlt):(ncol(XAlt) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
-      XAltT <- t(XAlt)
+      
+      if(nrow(XAlt)!=nrow(Y)){
+        stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you a proper matrix for extraPredictors and that the input Group variable has the correct number of samples?")
+      }
     }else{
       XAlt <- stats::model.matrix(~Group2)
-      XAltT <- t(XAlt)
+      
+      if(nrow(XAlt)!=nrow(Y)){
+        stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure the input Group variable has the correct number of samples?")
+      }
     }
     ns <- nrow(Y)
+    XAltT <- t(XAlt)
     bhatalt <- solve(crossprod(XAlt)) %*% (XAltT  %*% Y)
     pie1 <- Y - XAlt%*%bhatalt
     SigmaTildeAlt <- (crossprod(pie1))/ns
@@ -223,14 +304,20 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
 
       #Reassign column names to match column names of extraPredictors
       colnames(XNull)[ncol(XNull):(ncol(XNull) - (ncol(extraPredictors) - 1))] <- colnames(extraPredictors)
+      
+      if(nrow(XNull)!=nrow(Y)){
+        stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure you a proper matrix for extraPredictors and that the input Group variable has the correct number of samples?")
+      }
 
-      XNullT <- t(XNull)
     }else{
       XNull <- stats::model.matrix(~1, data = Group2)
-      XNullT <- t(XNull)
+      
+      if(nrow(XAlt)!=nrow(Y)){
+        stop("The number of rows of the design matrix should match the number of samples and does not.  Are you sure the input Group variable has the correct number of samples?")
+      }
     }
 
-    #bhatnull <- solve(XNullT %*% XNull) %*% XNullT %*% Y
+    XNullT <- t(XNull)
     bhatnull <- solve(crossprod(XNull)) %*% (XNullT %*% Y)
     pie2 <- Y - XNull%*%bhatnull
     #SigmaTildeNull <- (t(pie1)%*%pie1)/ns
@@ -242,7 +329,7 @@ CompDTUReg <- function(genename, Y = NULL, Group, runWithME = TRUE, YInfRep = NU
     ret <- data.frame(gene_id, pval_CompDTU = NA,  FStat = NA, NumDF = NA, DenomDF = NA, stringsAsFactors = F)
 
     if(customHypTest==TRUE){
-      qq <- ncol(XAlt - XNull)
+      qq <- ncol(XAlt) - ncol(XNull)
     }else{
       qq <- ncond - 1
     }
