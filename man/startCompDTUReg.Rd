@@ -4,7 +4,14 @@
 \alias{startCompDTUReg}
 \title{\code{startCompDTUReg} start the compositional DTU regression model corresponding to a specific gene-level file.}
 \usage{
-startCompDTUReg(x, runWithME, extraPredictors = NULL)
+startCompDTUReg(
+  x,
+  runWithME,
+  extraPredictors = NULL,
+  customHypTest = FALSE,
+  NullDesign = NULL,
+  AltDesign = NULL
+)
 }
 \arguments{
 \item{x}{The file path to a specific gene-level file}
@@ -13,7 +20,13 @@ startCompDTUReg(x, runWithME, extraPredictors = NULL)
 and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.}
 
 \item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
-The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.}
+The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed). Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.}
+
+\item{customHypTest}{should be set to TRUE if custom design matricies will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group and extraPredictors arguments must be set to NULL.  Default is FALSE.}
+
+\item{NullDesign}{specifies the design matrix corresponding to the null hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).}
+
+\item{AltDesign}{specifies the design matrix corresponding to the alternative hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).}
 }
 \value{
 a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on

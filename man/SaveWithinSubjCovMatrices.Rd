@@ -12,7 +12,7 @@ SaveWithinSubjCovMatrices(
   nsamp,
   DRIMSeqFiltering = TRUE,
   CLE = TRUE,
-  CLEParam = 0.01
+  CLEParam = 0.05
 )
 }
 \arguments{

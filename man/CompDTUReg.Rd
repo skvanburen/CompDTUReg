@@ -7,11 +7,14 @@
 CompDTUReg(
   genename,
   Y = NULL,
-  Group,
+  Group = NULL,
   runWithME = TRUE,
   YInfRep = NULL,
   mean.withinhat = NULL,
-  extraPredictors = NULL
+  extraPredictors = NULL,
+  customHypTest = FALSE,
+  NullDesign = NULL,
+  AltDesign = NULL
 )
 }
 \arguments{
@@ -19,21 +22,27 @@ CompDTUReg(
 
 \item{Y}{corresponds is the ilr transformed matrix of response values for the non-inferential replicate data.  Matrix
 should have a number of rows corresponding to the number of samples and a number of columns corresponding to the number of ilr coordinates
-(which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model with measurement error, as it is not used.}
+(which one less than the number transcripts remaining after filtering).  Rows need to be in the same order as either Group or the design matrices specified by AltDesign and NullDesign.  Set to NULL if you are running the model with measurement error, as it is not used.}
 
-\item{Group}{A vector of condition assignments corresponding to the samples}
+\item{Group}{A vector of condition assignments corresponding to the samples.  Needs to be ordered the same as Y or YInfRep.  Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.}
 
 \item{runWithME}{is TRUE/FALSE indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.}
 
 \item{YInfRep}{corresponds is the ilr transformed matrix of response values for the inferential replicate data.  Matrix
 should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
-(which one less than the number transcripts remaining after fltering).  Set to NULL if you are running the model without measurement error, as it is not used.}
+(which is one less than the number transcripts remaining after filtering).  Rows must be ordered as Sample1InfRep1, Sample2InfRep1, Sample3Infrep1, etc. NOT Sample1InfRep1, Sample1InfRep2, Sample1InfRepe,  etc.  Set to NULL if you are running the model without measurement error, as it is not used.}
 
 \item{mean.withinhat}{is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).}
 
 \item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
-The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.}
+The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed). Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.}
+
+\item{customHypTest}{should be set to TRUE if custom design matricies will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group and extraPredictors arguments must be set to NULL.  Default is FALSE.}
+
+\item{NullDesign}{specifies the design matrix corresponding to the null hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).}
+
+\item{AltDesign}{specifies the design matrix corresponding to the alternative hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).}
 }
 \value{
 a data.frame containing the gene_id being used, p-value from the CompDTU or CompDTUme significance test for condition, and various information on
@@ -44,7 +53,7 @@ the current dataset being used.
 }
 \details{
 This function is run separately for each gene and the easiest way to run it will be to follow the pipeline given in the SampleCode folder of the package.
-In particular the easiest way to call this is to use the helper function \code{\link{startCompDTUReg}}, which loads results from \code{\link{SaveGeneLevelFiles}}.
-These results contain all input arguments aside from \code{extraPredictors} (if any), and input arguments are automatically set by \code{\link{startCompDTUReg}}.
+In particular if gene-level files created from \code{\link{SaveGeneLevelFiles}} are used the easiest way to use this is to use the helper function \code{\link{startCompDTUReg}}, which loads the gene-level results.
+These gene-level files contain all input arguments aside from \code{extraPredictors} (if any) or custom specified null and alternative hypothesis design matrices, and input arguments are automatically set by \code{\link{startCompDTUReg}}.
 See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 }

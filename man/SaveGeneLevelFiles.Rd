@@ -12,7 +12,7 @@ SaveGeneLevelFiles(
   useInferentialReplicates = TRUE,
   GibbsSamps,
   CLE = TRUE,
-  CLEParam = 0.01
+  CLEParam = 0.05
 )
 }
 \arguments{
