@@ -1731,11 +1731,19 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
 
 #Neat little function that will load an .RData object and save its contents to whatever as the results of the output
 #For example can do d <- loadRData("file.RData") and whatever is loaded is saved as d
-#Taken from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
-loadRData <- function(fileName){
+#Modified from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
+loadRData <- function(fileName, objNameToGet = NULL){
   #loads an RData file, and returns it
   load(fileName)
-  get(ls()[ls() != "fileName"])
+  #print(ls()[ls() != "fileName"])
+  if(is.null(objNameToGet)){
+    rm(objNameToGet)
+    #print(ls()[ls() != "fileName"])
+    return(get(ls()[ls() != "fileName"]))
+  }else{
+    return(get(objNameToGet))
+  }
+  
 }
 
 
