@@ -81,7 +81,7 @@ key$Condition <- relevel(as.factor(key$Condition), ref = 1)
 
 
 #Use tximport to load in the results that have been pre-quantified by salmon
-  #Drop inferential replicates for now, as they will be read in in file (2)
+  #Drop inferential replicates for now, as they will be read in in file (2) if used
 QuantSalmon <- tximport::tximport(QuantFiles, type = "salmon", txOut = TRUE, ignoreTxVersion = FALSE,
                         countsFromAbundance = countsFromAbundance, dropInfReps = TRUE)
 fulltransnames <- rownames(QuantSalmon$abundance) #transcript names
@@ -121,18 +121,20 @@ load("abDatasets.RData")
 if(countsFromAbundance=="scaledTPM" | countsFromAbundance=="lengthScaledTPM"){
   load("cntGenecntsScaledTPM.RData")
   load("cntDatasetsNoOtherGroupscntsScaledTPM.RData")
-  #load("failedgibbssampsCountsScaledTPM.RData")
 }else if(countsFromAbundance=="no"){
   load("cntGene.RData")
   load("cntDatasetsNoOtherGroups.RData")
-  #load("failedgibbssamps.RData")
 }
 
 
 
 #The filtering values below can be modified to make the filtering more or less strict
-#These are the default values used in
+  #These are the default values used in
   #Love et al (2018) (Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification [version 3])
+  #See the help file for the dmFilter function for more information about each filtering parameter
+  #Even if no filtering is desired, make sure to run the DRIMSeqFilter function to create all expected datasets in the proper places
+  #In particular for minimal filtering consider setting all values to 0, corresponding to only removing features (transcripts) with zero expression across all samples 
+  #and genes with only one non-zero feature (since DTU analysis cannot be performed if a gene has only one transcript).
 
 
 #Sample size of smallest condition

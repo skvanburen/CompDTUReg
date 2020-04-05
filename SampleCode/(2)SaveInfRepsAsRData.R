@@ -1,6 +1,9 @@
 #Save Inferential Replicates to R with one file per biological sample
   #These files will be saved within the SalmonFilesDir directory
-  #If interential replicates are not used you may skip the file and go straight to (3)
+  #If interential replicates are not used you may skip the file and go straight to file (3)
+  #Especially if the number of samples is large it will be very difficult to generate datasets for all inferential replicates without some form of
+  #computing cluster available since the total amount of data gets quite large
+  #In this case you may be forced to skip use of the inferential replicates and use CompDTU instead of CompDTUme
 library(CompDTUReg)
 
 def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
@@ -17,7 +20,7 @@ setwd(SalmonFilesDir)
 
 #Code needs to loop over the biological samples in some form, we provide sample
   #code for a slurm array but a loop could be used as well as long as curr_samp and curr_file_loc get assigned properly
-#Array val here needs to match the number of biological samples/replicates in the analysis
+  #Array val here needs to match the number of biological samples/replicates in the analysis
 array_val <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 
