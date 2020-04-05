@@ -8,7 +8,6 @@ SaveGeneLevelFiles(
   directory,
   GeneLevelFilesSaveDir,
   curr_part_num,
-  DRIMSeqFiltering = TRUE,
   useInferentialReplicates = TRUE,
   GibbsSamps,
   CLE = TRUE,
@@ -22,10 +21,8 @@ SaveGeneLevelFiles(
 
 \item{curr_part_num}{if the current part number to save results for.  See \code{\link{SaveFullinfRepDat}} for more details.}
 
-\item{DRIMSeqFiltering}{is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-using the OtherGroups approach we had considered and generally should not be used.}
-
-\item{useInferentialReplicates}{is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise.  If FALSE the argument \code{GibbsSamps} is ignored.}
+\item{useInferentialReplicates}{is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise.   If useInferentialReplicates if set to FALSE the gene-level files will only contain data corresponding to the point estimates (output as Y)
+and if it is TRUE the gene-level files will also contain data corresponding to the inferential replicates (output as YInfRep)  If FALSE the argument \code{GibbsSamps} is ignored.}
 
 \item{GibbsSamps}{is TRUE if the inferential replicates are Gibbs samples and FALSE if the replicates are bootstrap samples}
 
@@ -35,7 +32,15 @@ using the OtherGroups approach we had considered and generally should not be use
 }
 \value{
 The function saves gene-level .RData files within the subdirectory \code{GeneLevelFilesSaveDir} of \code{save_dir} that contain all necessary
-information to run a \code{\link{CompDTUReg}} analysis, including inferential replicates (if any).  The name of each file is the name of the current gene.
+information to run a \code{\link{CompDTUReg}} analysis, including inferential replicates (if any).  The name of each file is the name of the current gene.  Specifically, these files contain: \cr
+ (1) key, which contains the sample names (in the Sample column), condition information (in the Condition column), and an identifier in the form of Sample1, Sample2, Sample3, etc \cr
+ (2) genename, the name of the current gene (that will be the name of the outputted file as well) \cr
+ (3) Group, which is a factor of the condition information specified in the Condition column of key \cr
+ (4) samps, the identifiers of the sample (Sample1, Sample2, Sample3, etc) contained within key$Sample \cr
+ (5) Y, the ilr-transformed matrix of response values (ie the ilr coordinates) corresponding to the point estimates for all samples for the current gene for use with CompDTU. \cr
+ (6) YInfRep, the ilr-transformed matrix  of response values (ie the ilr coordinates) corresponding to all inferential replicates for all samples for the current gene for use with CompDTUme.\cr
+ Will be in the order Sample1InfRep1, Sample2InfRep1, Sample3InfRep1, etc and will only be output if useInferentialReplicates is TRUE. \cr
+ (7) mean.withinhat The overall within-sample covariance matrix (that is the mean of each sample's witin-subject covariance matrix) used to correct the total covariance in the CompDTUme method.  Only output if useInferentialReplicates is TRUE. \cr
 }
 \description{
 Save a file for each gene containing all information necessary to run CompDTUReg

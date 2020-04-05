@@ -10,7 +10,6 @@ SaveWithinSubjCovMatrices(
   GibbsSamps,
   curr_part_num,
   nsamp,
-  DRIMSeqFiltering = TRUE,
   CLE = TRUE,
   CLEParam = 0.05
 )
@@ -26,8 +25,6 @@ Specified directory should be the same in \code{\link{SaveFullinfRepDat}}, \code
 \item{curr_part_num}{is the current part number that is being run.  The genelist specified in \code{filteredgenenames} is split into \code{nparts} equally sized chunks. See the example in (3)SaveNecessaryDatasetsForCompDTUReg.R within the package's SampleCode folder}
 
 \item{nsamp}{is the number of biological samples/replicates used in the analysis}
-
-\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Will almost always be set to TRUE.}
 
 \item{CLE}{is TRUE if the \code{\link{CorrectLowExpression}} procedure is to be used to correct low expression and FALSE if not.  Should be the same value in both \code{\link{SaveWithinSubjCovMatrices}} and \code{\link{SaveGeneLevelFiles}}.}
 

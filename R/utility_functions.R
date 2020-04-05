@@ -1055,18 +1055,20 @@ generateData <- function(x, dat, nsamp, abundance, abData, abCompDatasets = NULL
 #' @param cntGene is the data.frame of counts and lengths for each sample saved by \code{\link{sumToGene}}
 #' @inheritParams prepareData
 #' @inheritParams sumToGene
-#' @param min_samps_feature_expr From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed
-#' @param min_feature_expr From \code{\link{dmFilter}} documentation: Minimal feature expression.
-#' @param min_samps_feature_prop From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed.
-#' @param min_feature_prop From \code{\link{dmFilter}} documentation: Minimal proportion for feature expression. This value should be between 0 and 1.
+#' @param min_samps_feature_expr From \code{\link{dmFilter}} documentation: Minimal number of samples where features (transcripts) should be expressed
+#' @param min_feature_expr From \code{\link{dmFilter}} documentation: Minimal feature (transcript) expression.
+#' @param min_samps_feature_prop From \code{\link{dmFilter}} documentation: Minimal number of samples where features (transcripts) should be expressed.
+#' @param min_feature_prop From \code{\link{dmFilter}} documentation: Minimal proportion for feature (transcript) expression. This value should be between 0 and 1.
 #' @param min_samps_gene_expr From \code{\link{dmFilter}} documentation: Minimal number of samples where genes should be expressed.
 #' @param min_gene_expr From \code{\link{dmFilter}} documentation: Minimal gene expression.
 #' @param sampstouse is a vector of sample names (in the form of "Sample1", "Sample2", etc) to be used in the analysis.
 #' This argument should be used if you only want to run a subset of all sample ID's from key$Identifier.
-#' @param failedinfRepsamps is an optional parameter that gives names of samples ((in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
+#' @param failedinfRepsamps is an optional parameter that gives names of samples (in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
 #' This should not be needed, as newer versions of Salmon don't seem to have this issue but is left for backward compatability.
 #'
-#' @details This function internally calls \code{\link{dmFilter}}.  See the documentation for that function for more information.  See also the file (1)DataProcessing.R in the package's SampleCode folder for example code.
+#' @details This function internally calls \code{\link{dmFilter}}.  See the documentation for that function for more information, 
+#' including a discussion of setting all filtering parameters to zero to only remove features with zero expression across all samples and genes with only one non-zero feature (since DTU analysis cannot be performed if a gene has only
+#' one transcript.  See also the file (1)DataProcessing.R in the package's SampleCode folder for example code.
 #'
 #' @return This function will save versions of abGene, cntGene, abDatasets, and cntDatasets containing information for only those genes and transcripts that pass filtering with the given input parameters.
 #' For more information on the output datasets see \code{\link{sumToGene}}.
@@ -1442,7 +1444,6 @@ cntsToTPM <- function(cnts, nsamp, len = NULL, samps = NULL){
 #' @param abDatasetsFiltered is a list of dataframes that contains filtered TPM measurements for genes/transcripts that pass filtering.  Is output by \code{\link{DRIMSeqFilter}}
 #' @param nparts is the total number of parts to split the \code{filteredgenenames} list into when saving the datasets.  See details.
 #' @param curr_part_num is the current part number that is being run.  The genelist specified in \code{filteredgenenames} is split into \code{nparts} equally sized chunks. See the example in (3)SaveNecessaryDatasetsForCompDTUReg.R within the package's SampleCode folder
-#' @param DRIMSeqFiltering is TRUE if DRIMSeq's filtering method is used.  Will almost always be set to TRUE.
 #'
 #' @details This function is used to save the necessary inferential replicate datasets.  These files can get quite large with a large number of genes and/or a large number or biological samples or inferential replicates.  The parameter \code{nparts} controls how many chunks the full data is split into based
 #' on splitting gene name list \code{filteredgenenames} into \code{nparts} chunks.  Increasing \code{nparts} can help mitigate issues with the resulting files becoming too large.
@@ -1453,7 +1454,7 @@ cntsToTPM <- function(cnts, nsamp, len = NULL, samps = NULL){
 #' for the current part will be saved in the sub directories "infRepsabDatasets/" and "infRepscntDatasets/" respectively.  See the documentation for the function \code{\link{sumToGene}} for more information on the abDataset and cntDataset files.  Additionally, a data.frame that contains TPM and count information for all genes
 #' in the current part for all samples is saved in the subdirectory "infRepsFullinfRepDat/".
 #' @export SaveFullinfRepDat
-SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, save_dir, GibbsSamps, filteredgenenames, cntGene, key, nparts, curr_part_num, DRIMSeqFiltering = TRUE){
+SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, save_dir, GibbsSamps, filteredgenenames, cntGene, key, nparts, curr_part_num){
 
   startTime <- proc.time()
 
@@ -1615,8 +1616,6 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
 
   }
 
-  if(DRIMSeqFiltering==TRUE){
-
     abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
     names(abGNO) <- curr_genes
 
@@ -1652,78 +1651,7 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
 
     #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
     save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
-  }
-
-  # if(DRIMSeqFiltering==FALSE){
-  #   abG <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps)
-  #   # abG <- laply(curr_genes[100:200], generateData, dat = datt, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps, .inform = TRUE, .progress = "text")
-  #   names(abG) <- curr_genes
-  #
-  #   assign(paste0("abDatasets", type, "Part", curr_part_num), abG)
-  #
-  #   rm(abG)
-  #   gc()
-  #   obj1 <- c(paste0("abDatasets", type, "Part", curr_part_num))
-  #   #save(abDatasetsGibbsReps, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsReps.RData")
-  #
-  #   if(!dir.exists(paste0(save_dir, sd1))){
-  #     dir.create(paste0(save_dir, sd1))
-  #   }
-  #
-  #   save(InfRepsKey, ninfreps, nsamp, list = obj1, file = paste0(save_dir, sd1, "abDatasets", type, "Part", curr_part_num, ".RData"))
-  #
-  #
-  #   rm(list = paste0("abDatasets", type, "Part", curr_part_num))
-  #   gc()
-  #
-  #   cntG <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = FALSE, abCompDatasets = abDatasets, useExistingOtherGroups = TRUE, infReps = infReps, ninfreps = ninfreps)
-  #   names(cntG) <- curr_genes
-  #
-  #   assign(paste0("cntDatasets", type, "Part", curr_part_num), cntG)
-  #   obj1 <- c(paste0("cntDatasets", type, "Part", curr_part_num))
-  #
-  #   rm(cntG)
-  #   gc()
-  #
-  #   if(!dir.exists(paste0(save_dir, sd2))){
-  #     dir.create(paste0(save_dir, sd2))
-  #   }
-  #
-  #   save(InfRepsKey, ninfreps, nsamp, list = obj1, file = paste0(save_dir, sd2, "cntDatasets", type, "Part", curr_part_num, ".RData"))
-  #
-  #   rm(list = paste0("cntDatasets", type, "Part", curr_part_num))
-  #   gc()
-  #
-  #
-  #   abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasetsNoOtherGroups, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
-  #   names(abGNO) <- curr_genes
-  #
-  #   assign(paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num), abGNO)
-  #   obj2 <- c(paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num))
-  #
-  #   rm(abGNO)
-  #   gc()
-  #
-  #   #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
-  #   save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd1, "abDatasets", type, "NoOtherGroupsPart", curr_part_num, ".RData"))
-  #
-  #
-  #   rm(list = paste0("abDatasets", type, "NoOtherGroupsPart", curr_part_num))
-  #   gc()
-  #
-  #
-  #   cntGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = FALSE, abCompDatasets = abDatasetsNoOtherGroups, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
-  #   names(cntGNO) <- curr_genes
-  #
-  #   assign(paste0("cntDatasets", type, "NoOtherGroupsPart", curr_part_num), cntGNO)
-  #   obj2 <- c(paste0("cntDatasets", type, "NoOtherGroupsPart", curr_part_num))
-  #
-  #   rm(cntGNO)
-  #   gc()
-  #
-  #   #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
-  #   save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "NoOtherGroupsPart", curr_part_num, ".RData"))
-  # }
+  
 
 
 }
@@ -1760,7 +1688,7 @@ loadRData <- function(fileName, objNameToGet = NULL){
 #' @return This function will save the sample-specific mean and covariance values across all inferential replicates on the \code{\link{ilr}} scale for all genes within the current part number \code{curr_part_num}.  These files will be saved within the subdirectory
 #' "ilrMeansCovs/" in the \code{save_dir} folder and will be used by \code{\link{SaveGeneLevelFiles}} if present.
 #' @export SaveWithinSubjCovMatrices
-SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part_num, nsamp, DRIMSeqFiltering = TRUE, CLE = TRUE, CLEParam = 0.05){
+SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part_num, nsamp, CLE = TRUE, CLEParam = 0.05){
   #Directory where the infRepabDatasets are saved by SaveFullinfRepDat
   abDatasetsSubDir <- "infRepsabDatasets/"
 
@@ -1774,7 +1702,7 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
     dirpiece <- "Boot"
   }
 
-  if(DRIMSeqFiltering==FALSE){
+
     load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
     load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num, ".RData"))
 
@@ -1783,40 +1711,13 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
 
     abDatasetsToUse2 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num))
     genestouse2 <- names(abDatasetsToUse2)
-  }else{
+
     load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
 
     abDatasetsToUse3 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num))
     genestouse3 <- names(abDatasetsToUse3)
-  }
 
-
-
-
-
-  if(DRIMSeqFiltering==FALSE){
-    #ilrMeansCovsOtherGroups <- laply(genestouse, calcIlrMeansCovs, dat = abDatasetsToUse1, nsamp = nsamp, .progress = "text", .drop = F)
-    ilrMeansCovsOtherGroups <- lapply(genestouse1, calcIlrMeansCovs, dat = abDatasetsToUse1, nsamp = nsamp, CLE = CLE, CLEParam = CLEParam)
-    names(ilrMeansCovsOtherGroups) <- genestouse1
-
-    assign(paste0("ilrMeansCovsOtherGroupsPart", curr_part_num), ilrMeansCovsOtherGroups)
-
-    if(!dir.exists(paste0(save_dir, ilrMeansCovsSubDir))){
-      dir.create(paste0(save_dir, ilrMeansCovsSubDir))
-    }
-
-    save(list = paste0("ilrMeansCovsOtherGroupsPart", curr_part_num), file = paste0(save_dir, ilrMeansCovsSubDir,"ilrMeansCovsOtherGroupsPart", curr_part_num, ".RData"))
-
-
-    # ilrMeansCovsNoOtherGroups <- laply(genestouse2, calcIlrMeansCovs, dat = abDatasetsToUse2, nsamp = nsamp, .progress = "text", .drop = F)
-    ilrMeansCovsNoOtherGroups <- lapply(genestouse2, calcIlrMeansCovs, dat = abDatasetsToUse2, nsamp = nsamp, CLE = CLE, CLEParam = CLEParam)
-    names(ilrMeansCovsNoOtherGroups) <- genestouse2
-
-    assign(paste0("ilrMeansCovsNoOtherGroupsPart", curr_part_num), ilrMeansCovsNoOtherGroups)
-    save(list = paste0("ilrMeansCovsNoOtherGroupsPart", curr_part_num), file = paste0(save_dir, ilrMeansCovsSubDir,"ilrMeansCovsNoOtherGroupsPart", curr_part_num, ".RData"))
-  }
-
-  if(DRIMSeqFiltering==TRUE){
+    
     load(paste0(directory, "cntGenecntsScaledTPMFiltered.RData"))
     #genen <- names(abDatasetsToUse2)
     filterabDatasets <- function(x, cntGeneFiltered, abDatasetsToUse2){
@@ -1860,14 +1761,14 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
     # save(list = paste0("WithinSubjectCovarianceMatricesFilteredPart", curr_part_num),
     #      file = paste0(save_dir, ilrMeansCovsSubDir,"WithinSubjectCovarianceMatricesFilteredPart", curr_part_num, ".RData"))
 
-  }
+  
 }
 
 
 
 
 
-calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
+calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.05){
   test1 <- dat[[x]]
   if(is.null(test1)==TRUE){
     return(NULL)
@@ -1974,22 +1875,27 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.01){
 #' @param directory is the directory where previous datasets are saved by \code{\link{sumToGene}} and \code{\link{DRIMSeqFilter}}
 #' @param GeneLevelFilesSaveDir is the directory the gene level files will be saved to
 #' @param curr_part_num if the current part number to save results for.  See \code{\link{SaveFullinfRepDat}} for more details.
-#' @param DRIMSeqFiltering is an optional parameter indicating if DRIMSeqs filtering procedure is used.  Default is TRUE, FALSE is only provided as legacy option for
-#' using the OtherGroups approach we had considered and generally should not be used.
-#' @param useInferentialReplicates is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise.  If FALSE the argument \code{GibbsSamps} is ignored.
+#' @param useInferentialReplicates is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise.   If useInferentialReplicates if set to FALSE the gene-level files will only contain data corresponding to the point estimates (output as Y)
+#' and if it is TRUE the gene-level files will also contain data corresponding to the inferential replicates (output as YInfRep)  If FALSE the argument \code{GibbsSamps} is ignored.
 #'
 #' @return The function saves gene-level .RData files within the subdirectory \code{GeneLevelFilesSaveDir} of \code{save_dir} that contain all necessary
-#' information to run a \code{\link{CompDTUReg}} analysis, including inferential replicates (if any).  The name of each file is the name of the current gene.
+#' information to run a \code{\link{CompDTUReg}} analysis, including inferential replicates (if any).  The name of each file is the name of the current gene.  Specifically, these files contain: \cr
+#'  (1) key, which contains the sample names (in the Sample column), condition information (in the Condition column), and an identifier in the form of Sample1, Sample2, Sample3, etc \cr
+#'  (2) genename, the name of the current gene (that will be the name of the outputted file as well) \cr
+#'  (3) Group, which is a factor of the condition information specified in the Condition column of key \cr
+#'  (4) samps, the identifiers of the sample (Sample1, Sample2, Sample3, etc) contained within key$Sample \cr
+#'  (5) Y, the ilr-transformed matrix of response values (ie the ilr coordinates) corresponding to the point estimates for all samples for the current gene for use with CompDTU. \cr
+#'  (6) YInfRep, the ilr-transformed matrix  of response values (ie the ilr coordinates) corresponding to all inferential replicates for all samples for the current gene for use with CompDTUme.\cr
+#'  Will be in the order Sample1InfRep1, Sample2InfRep1, Sample3InfRep1, etc and will only be output if useInferentialReplicates is TRUE. \cr
+#'  (7) mean.withinhat The overall within-sample covariance matrix (that is the mean of each sample's witin-subject covariance matrix) used to correct the total covariance in the CompDTUme method.  Only output if useInferentialReplicates is TRUE. \cr
 #'
 #' @details See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 #' @export SaveGeneLevelFiles
-SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, DRIMSeqFiltering = TRUE, useInferentialReplicates = TRUE, GibbsSamps,
+SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, useInferentialReplicates = TRUE, GibbsSamps,
                                CLE = TRUE, CLEParam = 0.05){
-  setwd(directory)
+    setwd(directory)
 
 
-
-  if(DRIMSeqFiltering==TRUE){
     load("abGeneFiltered.RData")
     load("cntGenecntsScaledTPMFiltered.RData")
     load("abDatasetsNoOtherGroupsFiltered.RData")
@@ -2002,12 +1908,6 @@ SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, 
     abGene <- abGeneFiltered
     cntGene <- cntGeneFiltered
     abDatasets <- abDatasetsFiltered
-  }else if(DRIMSeqFiltering==FALSE){
-    load("abGene.RData")
-    load("cntGenecntsScaledTPM.RData")
-    load("abDatasets.RData")
-    load("tx2gene.RData")
-  }
 
   key <- key
 
@@ -2027,13 +1927,8 @@ SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, 
     #ilrMeansCovsSubDir <- "ilrMeansCovs/"
     ilrMeansCovsSubDir <- "WithinSubjectCovarianceMatrices/"
 
-    if(DRIMSeqFiltering==TRUE){
       ilrMeansCovs <- loadRData(paste0(directory, ilrMeansCovsSubDir, "ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num, ".RData"))
       newAbDatasetsinfRepsFinal <- loadRData(paste0(directory, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num,".RData"))
-    }else if(DRIMSeqFiltering==FALSE){
-      ilrMeansCovs <- loadRData(paste0(directory, ilrMeansCovsSubDir,"ilrMeansCovsBoot/ilrMeansCovsOtherGroupsPart", curr_part_num, ".RData"))
-      newAbDatasetsinfRepsFinal <- loadRData(paste0(directory, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
-    }
 
     newAbDatasetsinfRepsFinalSub <- newAbDatasetsinfRepsFinal[names(newAbDatasetsinfRepsFinal) %in% genestouse]
     ilrMeansCovsSub <- ilrMeansCovs[names(ilrMeansCovs) %in% genestouse]

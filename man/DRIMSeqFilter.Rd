@@ -30,13 +30,13 @@ DRIMSeqFilter(
 and "Identifier", which should be named "Sample1", "Sample2", ... up to the number of rows of key.  This "Identifier" needs to be created like this even if
 the observations don't correspond to unique biological samples.}
 
-\item{min_samps_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed}
+\item{min_samps_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features (transcripts) should be expressed}
 
-\item{min_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal feature expression.}
+\item{min_feature_expr}{From \code{\link{dmFilter}} documentation: Minimal feature (transcript) expression.}
 
-\item{min_samps_feature_prop}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features should be expressed.}
+\item{min_samps_feature_prop}{From \code{\link{dmFilter}} documentation: Minimal number of samples where features (transcripts) should be expressed.}
 
-\item{min_feature_prop}{From \code{\link{dmFilter}} documentation: Minimal proportion for feature expression. This value should be between 0 and 1.}
+\item{min_feature_prop}{From \code{\link{dmFilter}} documentation: Minimal proportion for feature (transcript) expression. This value should be between 0 and 1.}
 
 \item{min_samps_gene_expr}{From \code{\link{dmFilter}} documentation: Minimal number of samples where genes should be expressed.}
 
@@ -49,7 +49,7 @@ the observations don't correspond to unique biological samples.}
 \item{sampstouse}{is a vector of sample names (in the form of "Sample1", "Sample2", etc) to be used in the analysis.
 This argument should be used if you only want to run a subset of all sample ID's from key$Identifier.}
 
-\item{failedinfRepsamps}{is an optional parameter that gives names of samples ((in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
+\item{failedinfRepsamps}{is an optional parameter that gives names of samples (in the form of "Sample1", "Sample2", etc) that had the infRep sampler fail.
 This should not be needed, as newer versions of Salmon don't seem to have this issue but is left for backward compatability.}
 }
 \value{
@@ -61,5 +61,7 @@ Filter data using filtering procedure built into \emph{DRIMSeq} via the \code{\l
 the filtered versions of the various datasets described in \code{\link{sumToGene}}
 }
 \details{
-This function internally calls \code{\link{dmFilter}}.  See the documentation for that function for more information.  See also the file (1)DataProcessing.R in the package's SampleCode folder for example code.
+This function internally calls \code{\link{dmFilter}}.  See the documentation for that function for more information, 
+including a discussion of setting all filtering parameters to zero to only remove features with zero expression across all samples and genes with only one non-zero feature (since DTU analysis cannot be performed if a gene has only
+one transcript.  See also the file (1)DataProcessing.R in the package's SampleCode folder for example code.
 }

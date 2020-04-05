@@ -14,8 +14,7 @@ SaveFullinfRepDat(
   cntGene,
   key,
   nparts,
-  curr_part_num,
-  DRIMSeqFiltering = TRUE
+  curr_part_num
 )
 }
 \arguments{
@@ -41,8 +40,6 @@ the observations don't correspond to unique biological samples.}
 \item{nparts}{is the total number of parts to split the \code{filteredgenenames} list into when saving the datasets.  See details.}
 
 \item{curr_part_num}{is the current part number that is being run.  The genelist specified in \code{filteredgenenames} is split into \code{nparts} equally sized chunks. See the example in (3)SaveNecessaryDatasetsForCompDTUReg.R within the package's SampleCode folder}
-
-\item{DRIMSeqFiltering}{is TRUE if DRIMSeq's filtering method is used.  Will almost always be set to TRUE.}
 }
 \value{
 The function will save three separate .RData files that contains all bootstrap or Gibbs replicates for all samples for the genes that exist for the current part of the data (specified by \code{curr_part_num}).  Specifically, the abDataset cntDataset files containing all bootstrap/Gibbs samples

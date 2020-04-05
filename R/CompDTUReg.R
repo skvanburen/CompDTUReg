@@ -38,6 +38,9 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
   genename <- genename
   Group <- Group
   if(runWithME==TRUE){
+    if(is.null(YInfRep)){
+      stop("You have specified runWithME to be TRUE to run the CompDTUme model but the inferential replicate data appears to not exist within the gene-level file.  Did you generate the gene-level files using SaveGeneLevelFiles with useInferentialReplicates set to FALSE by mistake?")
+    }
     mean.withinhat <- mean.withinhat
     res <- CompDTUReg(genename = genename, Y = NULL, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       extraPredictors = extraPredictors, customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
@@ -65,7 +68,7 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
 #' should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
 #' (which is one less than the number transcripts remaining after filtering).  Rows must be ordered as Sample1InfRep1, Sample2InfRep1, Sample3Infrep1, etc. NOT Sample1InfRep1, Sample1InfRep2, Sample1InfRepe,  etc.  Set to NULL if you are running the model without measurement error, as it is not used.
 #' @param mean.withinhat is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).
-#' @param  extraPredictors is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
+#' @param extraPredictors is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
 #' The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed). Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.
 #' @param customHypTest should be set to TRUE if custom design matricies will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group and extraPredictors arguments must be set to NULL.  Default is FALSE.
 #' @param AltDesign specifies the design matrix corresponding to the alternative hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).
