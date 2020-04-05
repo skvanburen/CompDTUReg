@@ -36,15 +36,13 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
   
   load(x)
   genename <- genename
-  Y <- Y
   Group <- Group
   if(runWithME==TRUE){
-    YInfRep <- YInfRep
     mean.withinhat <- mean.withinhat
-    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
+    res <- CompDTUReg(genename = genename, Y = NULL, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       extraPredictors = extraPredictors, customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }else{
-    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, extraPredictors = extraPredictors, 
+    res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, YInfRep = NULL, extraPredictors = extraPredictors, 
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }
   return(res)
@@ -85,6 +83,12 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
 CompDTUReg <- function(genename, Y = NULL, Group = NULL, runWithME = TRUE, YInfRep = NULL, mean.withinhat = NULL,
                        extraPredictors = NULL, customHypTest = FALSE, NullDesign = NULL, AltDesign = NULL){
   
+  #If a custom hypothesis test is to be specified, set Group and extraPredictors to be NULL
+  if(customHypTest==TRUE){
+    Group <- NULL
+    extraPredictors <- NULL
+  }
+  
   if(is.null(Group) & ((is.null(NullDesign) | is.null(AltDesign)))){
       stop("If Group is not specified design matrices must be specified under the null and alternative hypothesis using the NullDesign and AltDesign arguments")
   }
@@ -101,11 +105,6 @@ CompDTUReg <- function(genename, Y = NULL, Group = NULL, runWithME = TRUE, YInfR
     if(ncol(NullDesign)>=ncol(AltDesign)){
       stop("The Alternative design matrix does not have more predictors than the null.  Check the specification of the two design matrices.")
     }
-  }
-  
-  #If the above checks on the custom specified design matrices pass, set Group and extraPredictors to NULL if they were specified
-  if(customHypTest==TRUE & (!is.null(Group) | !is.null(extraPredictors))){
-    stop("If customHypTest is TRUE set both Group and extraPredictors to NULL")
   }
   
   if(runWithME==TRUE & is.null(YInfRep)){
