@@ -13,7 +13,7 @@ library(CompDTUReg)
 ```
 
 ## Model
-For details of the model, see (Give bioarxiv link).
+For details of the model, see the preprint at https://www.biorxiv.org/content/10.1101/2020.05.22.111450v1
 
 ## Usage  
 For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the CompDTUReg methods starting with a folder of Salmon quantifications  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  For example Salmon quantification data for 10 replicates, see the repo 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  Specifically:<br>
