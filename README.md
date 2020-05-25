@@ -2,7 +2,7 @@
 
 ## Introduction
 
-<code>CompDTUReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in https://www.biorxiv.org/content/10.1101/2020.05.22.111450v1
+<code>CompDTUReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in "Differential Transcript Usage Analysis Incorporating Quantification Uncertainty Via Compositional Measurement Error Regression Modeling" (available as a preprint at https://www.biorxiv.org/content/10.1101/2020.05.22.111450v1)
 
 ## Installation
 We recommend installing from Github for the latest version of the code:
