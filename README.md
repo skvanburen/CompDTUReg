@@ -2,7 +2,7 @@
 
 ## Introduction
 
-<code>CompDTUReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in (Give bioarxiv link).
+<code>CompDTUReg</code> is an R package that fits the compositional regression models for DTU analysis of RNA-seq data described in "Differential Transcript Usage Analysis Incorporating Quantification Uncertainty Via Compositional Measurement Error Regression Modeling" (available as a preprint at https://www.biorxiv.org/content/10.1101/2020.05.22.111450v1)
 
 ## Installation
 We recommend installing from Github for the latest version of the code:
@@ -13,7 +13,7 @@ library(CompDTUReg)
 ```
 
 ## Model
-For details of the model, see (Give bioarxiv link).
+For details of the model, see the preprint at https://www.biorxiv.org/content/10.1101/2020.05.22.111450v1
 
 ## Quick Example
 This section will give quick instructions on fitting the CompDTU and CompDTUme results on data that has already been processed using files (1) through (3) in the SampleCode folder.  This sample code will use the files in the GeneLevelFiles directory from the 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  For a full walkthrough starting from data quantified from Salmon, see the "Usage" section below.
@@ -31,7 +31,7 @@ For an example of how to use the package, see the files contained in the SampleC
  <br>
  File (2) needs to be run separately for each different sample and (3) needs to be run separately for each part that the data is split up into.  The files need to be split up into parts in this way to make the amount of memory required by each part more manageable. <br>  
    <br>
-Our code is written assuming slurm based array jobs, but loops could be used instead by modifying the code (see each file for more details).  We recommend arrays if possible, especially if the number of samples is very high.  Sample array jobs for (2) and (3) respectively are provided as (2)SampleArrayJob.sh and (3)SampleArrayJob.sh.  These files can be run using the following commands: <br>
+Our sample code is written assuming slurm based array jobs, but loops could be used instead by modifying the code (see each file for more details).  We recommend arrays if possible, especially if the number of samples is very high.  Sample array jobs for (2) and (3) respectively are provided as (2)SampleArrayJob.sh and (3)SampleArrayJob.sh.  These files can be run using the following commands: <br>
   <br>
 module load r <br>
 #Update 10 to be the number of biological samples <br>
