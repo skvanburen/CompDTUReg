@@ -15,7 +15,10 @@ library(CompDTUReg)
 ## Model
 For details of the model, see (Give bioarxiv link).
 
-## Usage  
+## Quick Example
+This section will give quick instructions on fitting the CompDTU and CompDTUme results on data that has already been processed using files (1) through (3) in the SampleCode folder.  This sample code will use the files in the GeneLevelFiles directory from the 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  For a full walkthrough starting from data quantified from Salmon, see the "Usage" section below.
+
+## Full Example 
 For an example of how to use the package, see the files contained in the SampleCode folder within the package.  These files provide a pipeline to run the CompDTUReg methods starting with a folder of Salmon quantifications  It is recommended you copy these files and modify these files as needed for your analysis.  The files should be run in order, starting with (1).  For example Salmon quantification data for 10 replicates, see the repo 'CompDTURegSampleData' located at https://github.com/skvanburen/CompDTURegSampleData.  Specifically:<br>
  <br>
 (1)DataProcessing.R gives example code to import the non-inferential data into R and save initial files needed for further processing, including the tx2gene object that links a transcript to a gene as well as the datasets after filtering using DRIMSeq's filtering.<br>
