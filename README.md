@@ -41,6 +41,7 @@ CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 ```
 <br/>
 The resulting output is given below, and gives the `p-value` as well as the `F` statistic and associated degrees of freedom, which differ for each gene depending on how many transcripts from the gene were incorporated in the model.
+<br/>
 ```r
 > CompDTUResults1
                gene_id pval_CompDTU       FStat NumDF DenomDF
@@ -82,6 +83,7 @@ colnames(extraPredictors) <- c("pred1", "pred2")
 ```
 <br/>
 Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.
+<br/>
 ```r
 
 key <- CompDTUReg:::loadRData(GeneFiles[1], objNameToGet = "key")
@@ -99,6 +101,7 @@ CompDTUmeResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 ```
 <br/>
 The resulting output is given below:
+<br/>
 ```r
 > CompDTUResults2
                gene_id pval_CompDTU       FStat NumDF DenomDF
@@ -137,6 +140,7 @@ CompDTUResults3 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALS
 CompDTUmeResults3 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, customHypTest = TRUE, NullDesign = NullDesign3, AltDesign = AltDesign3))
 ```
 Now, the `p-values` correspond to testing for the significance of `pred2` controlling for `cond` and `pred1` in the model.
+<br/>
 ```r
 > CompDTUResults3
                gene_id pval_CompDTU      FStat NumDF DenomDF
