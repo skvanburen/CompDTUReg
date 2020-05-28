@@ -11,6 +11,7 @@ CompDTUReg(
   runWithME = TRUE,
   YInfRep = NULL,
   mean.withinhat = NULL,
+  extraPredictors = NULL,
   customHypTest = FALSE,
   NullDesign = NULL,
   AltDesign = NULL
@@ -32,10 +33,12 @@ and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-
 should have a number of rows corresponding to the number of samples times the number of replicates and a number of columns corresponding to the number of ilr coordinates
 (which is one less than the number transcripts remaining after filtering).  Rows must be ordered as Sample1InfRep1, Sample2InfRep1, Sample3Infrep1, etc. NOT Sample1InfRep1, Sample1InfRep2, Sample1InfRepe,  etc.  Set to NULL if you are running the model without measurement error, as it is not used.}
 
-\item{mean.withinhat}{is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).
+\item{mean.withinhat}{is the mean of the sample-specific covariance matrices of the inferential replicates (calculated on the \code{\link{ilr}} scale).}
+
+\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
 The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed). Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.}
 
-\item{customHypTest}{should be set to TRUE if custom design matrices will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group argument must be set to NULL.  Default is FALSE.}
+\item{customHypTest}{should be set to TRUE if custom design matricies will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group and extraPredictors arguments must be set to NULL.  Default is FALSE.}
 
 \item{NullDesign}{specifies the design matrix corresponding to the null hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).}
 
@@ -51,6 +54,6 @@ the current dataset being used.
 \details{
 This function is run separately for each gene and the easiest way to run it will be to follow the pipeline given in the SampleCode folder of the package.
 In particular if gene-level files created from \code{\link{SaveGeneLevelFiles}} are used the easiest way to use this is to use the helper function \code{\link{startCompDTUReg}}, which loads the gene-level results.
-These gene-level files contain all input arguments aside from any custom specified null and alternative hypothesis design matrices, and input arguments are automatically set by \code{\link{startCompDTUReg}}.
+These gene-level files contain all input arguments aside from \code{extraPredictors} (if any) or custom specified null and alternative hypothesis design matrices, and input arguments are automatically set by \code{\link{startCompDTUReg}}.
 See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 }

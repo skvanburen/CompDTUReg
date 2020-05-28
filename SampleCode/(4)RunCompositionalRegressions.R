@@ -15,6 +15,11 @@ GeneFiles <- list.files(GeneLevelFilesSaveDir, full.names = TRUE)
 pred1 <- c(54,23,45,26,78,33,22,44,55,66)
 pred2 <- c(5,2,5,2,5,2,5,2,5,2)
 
+#Creating extraPredictors as data frame then convert to matrix to result in a matrix with each column
+  #being a predictor with the names pred1, pred2, as desired
+  #Can leave at the default value of NULL if not needed
+extraPredictors <- as.matrix(data.frame(pred1, pred2))
+
 
 
 #CompDTUReg is run separately for each gene, so easiest way to run is using lapply with the startCompDTUReg
@@ -22,8 +27,8 @@ pred2 <- c(5,2,5,2,5,2,5,2,5,2)
 #Condition variable is loaded by the function and included automatically, and the returned pvalue will be the pvalue for the significance
   #test of condition (controlling for any extra predictors if included)
 #Aggregate results from all genes into one data.table object using rbindlist from data.table
-CompDTUResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE))
-CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE))
+CompDTUResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE, extraPredictors = extraPredictors))
+CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, extraPredictors = extraPredictors))
 
 
 
