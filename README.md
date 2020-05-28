@@ -94,14 +94,14 @@ NullDesign2 <- model.matrix(~pred1 + pred2)
 AltDesign2 <- model.matrix(~pred1 + pred2 + cond)
 ```
 
-<br>
+
 The results below now test for DTU (ie the significance of the Group (cond) variable) while controlling for `pred1` and `pred2`.
 
 ```r
 CompDTUResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE, customHypTest = TRUE, NullDesign = NullDesign2, AltDesign = AltDesign2))
 CompDTUmeResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, customHypTest = TRUE, NullDesign = NullDesign2, AltDesign = AltDesign2))
 ```
-<br>
+
 The resulting output is given below:
 
 
