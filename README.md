@@ -34,14 +34,14 @@ GeneFiles <- list.files(GeneLevelFilesSaveDir, full.names = TRUE)
 ```
 <br/>
 The `CompDTU` and `CompDTUme` methods are run separately for each gene, and the easiest way to run the methods is to use `lapply` with the `startCompDTUReg` function.  This function will load in the data for the current gene from the files conatined in `GeneFiles`.  The condition variable is loaded and included automatically, such that the returned `p-value` will be the `p-value` for the significance test of condition.  If inferential replicates are used in the analysis, set `runWithME` to `TRUE` and if inferential replicates are not used, set `runWithME` to `FALSE`.
-
+<br/>
 ```r
 #Aggregate results from all genes into one data.table object using rbindlist from data.table
 CompDTUResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE))
 CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE))
 ```
 <br/>
-The resulting output is given below, and gives the `p-value` as well as the `F` statistic and associated degrees of freedom, which differ for each gene depending on how many transcripts from the gene were incorporated in the model.<br/>
+The resulting output is given below, and gives the `p-value` as well as the `F` statistic and associated degrees of freedom, which differ for each gene depending on how many transcripts from the gene were incorporated in the model.
 <br/>
 ```r
 CompDTUResults1
@@ -71,10 +71,7 @@ CompDTUmeResults1
 
 ```
 <br/><br/>
-Previous results did not incorporate any additional predictors, and we now denomstrate how to control for additional predictors in the model.
-
-<br/>
-First, create two additional predictors:
+Previous results did not incorporate any additional predictors, and we now denomstrate how to control for additional predictors in the model.  First, create two additional predictors:
 ```r
 pred1 <- c(54,23,45,26,78,33,22,44,55,66)
 pred2 <- c(5,2,5,2,5,2,5,2,5,2)
