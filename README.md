@@ -32,19 +32,19 @@ GeneLevelFilesSaveDir <- "/path/to/GeneLevelFiles/"
 #Generate list of all gene level files saved in the directory
 GeneFiles <- list.files(GeneLevelFilesSaveDir, full.names = TRUE)
 ```
-<br/>
+<br>
 The `CompDTU` and `CompDTUme` methods are run separately for each gene, and the easiest way to run the methods is to use `lapply` with the `startCompDTUReg` function.  This function will load in the data for the current gene from the files conatined in `GeneFiles`.  The condition variable is loaded and included automatically, such that the returned `p-value` will be the `p-value` for the significance test of condition.  If inferential replicates are used in the analysis, set `runWithME` to `TRUE` and if inferential replicates are not used, set `runWithME` to `FALSE`.
-<br/>
+<br>
 ```r
 #Aggregate results from all genes into one data.table object using rbindlist from data.table
 CompDTUResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE))
 CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE))
 ```
-<br/>
+<br>
 The resulting output is given below, and gives the `p-value` as well as the `F` statistic and associated degrees of freedom, which differ for each gene depending on how many transcripts from the gene were incorporated in the model.
-<br/>
+<br>
 ```r
-CompDTUResults1
+> CompDTUResults1
                gene_id pval_CompDTU       FStat NumDF DenomDF
  1: ENSG00000000457.13 3.536641e-01    1.314568     3       6
  2: ENSG00000000460.16 1.718228e-02    7.677140     2       7
@@ -56,7 +56,7 @@ CompDTUResults1
  8: ENSG00000001617.11 1.463706e-01    2.610781     3       6
  9: ENSG00000001626.14 2.391880e-03   17.150811     3       6
 10: ENSG00000002016.17 9.985113e-06   90.434329     2       7
-CompDTUmeResults1
+> CompDTUmeResults1
                gene_id pval_CompDTUme       FStat NumDF DenomDF
  1: ENSG00000000457.13   3.351576e-01    1.384456     3       6
  2: ENSG00000000460.16   9.776200e-02    3.301284     2       7
@@ -70,8 +70,9 @@ CompDTUmeResults1
 10: ENSG00000002016.17   1.077359e-05   88.416540     2       7
 
 ```
-<br/><br/>
+<br><br>
 Previous results did not incorporate any additional predictors, and we now denomstrate how to control for additional predictors in the model.  First, create two additional predictors:
+
 ```r
 pred1 <- c(54,23,45,26,78,33,22,44,55,66)
 pred2 <- c(5,2,5,2,5,2,5,2,5,2)
@@ -79,9 +80,10 @@ pred2 <- c(5,2,5,2,5,2,5,2,5,2)
 extraPredictors <- matrix(c(pred1, pred2), ncol = 2)
 colnames(extraPredictors) <- c("pred1", "pred2")
 ```
-<br/>
+<br>
 Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.
-<br/>
+<br>
+
 ```r
 
 key <- CompDTUReg:::loadRData(GeneFiles[1], objNameToGet = "key")
@@ -90,16 +92,17 @@ cond <- key$Condition
 NullDesign2 <- model.matrix(~pred1 + pred2)
 AltDesign2 <- model.matrix(~pred1 + pred2 + cond)
 ```
-<br/>
+
+<br>
 The results below now test for DTU (ie the significance of the Group (cond) variable) while controlling for `pred1` and `pred2`.
 
 ```r
 CompDTUResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE, customHypTest = TRUE, NullDesign = NullDesign2, AltDesign = AltDesign2))
 CompDTUmeResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, customHypTest = TRUE, NullDesign = NullDesign2, AltDesign = AltDesign2))
 ```
-<br/>
+<br>
 The resulting output is given below:
-<br/>
+<br>
 ```r
 > CompDTUResults2
                gene_id pval_CompDTU       FStat NumDF DenomDF
