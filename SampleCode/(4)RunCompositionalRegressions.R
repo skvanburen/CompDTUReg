@@ -34,11 +34,11 @@ CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 key <- CompDTUReg:::loadRData(GeneFiles[1], objNameToGet = "key")
 cond <- key$Condition
 
-#Specify null and altertive design matrices
+#Specify null and alternative design matrices.  The rows must be in the same order as key$Identifier, where key is extracted above
 NullDesign2 <- model.matrix(~pred1 + pred2)
 AltDesign2 <- model.matrix(~pred1 + pred2 + cond)
 
-#These results are the same as the results above and test for DTU (ie the significance of the Group (cond) variable)
+#These results test for DTU (ie the significance of the Group (cond) variable) controlling for pred1 and pred2
 CompDTUResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE, customHypTest = TRUE, NullDesign = NullDesign2, AltDesign = AltDesign2))
 CompDTUmeResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, customHypTest = TRUE, NullDesign = NullDesign2, AltDesign = AltDesign2))
 
@@ -46,7 +46,7 @@ CompDTUmeResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 
 #Now, we could test for the significance of pred2 keeping cond and pred1 in the model
 
-#Specify null and alternative design matrices
+#Specify null and alternative design matrices.  The rows again must be in the same order as key$Identifier, where key is extracted above
 NullDesign3 <- model.matrix(~pred1 + cond)
 AltDesign3 <- model.matrix(~pred1 + pred2 + cond)
 
