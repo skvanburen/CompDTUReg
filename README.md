@@ -84,7 +84,7 @@ Now, load the first gene-level file to get the group (condition) information for
 
 ```r
 
-key <- CompDTUReg:::loadRData(GeneFiles[1], objNameToGet = "key")
+key <- CompDTUReg::loadRData(GeneFiles[1], objNameToGet = "key")
 cond <- key$Condition
 
 #The rows must be in the same order as key$Identifier, where key is extracted above
