@@ -51,7 +51,7 @@ CompDTUmeResults2 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 
 #Now, we could test for the significance of pred2 keeping cond and pred1 in the model
 
-#Specify null and altertive design matrices
+#Specify null and alternative design matrices
 NullDesign3 <- model.matrix(~pred1 + cond)
 AltDesign3 <- model.matrix(~pred1 + pred2 + cond)
 
