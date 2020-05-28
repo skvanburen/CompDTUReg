@@ -7,7 +7,6 @@
 startCompDTUReg(
   x,
   runWithME,
-  extraPredictors = NULL,
   customHypTest = FALSE,
   NullDesign = NULL,
   AltDesign = NULL
@@ -19,10 +18,7 @@ startCompDTUReg(
 \item{runWithME}{is TRUE/FALSE indicating whether the model should be run with measurement error or not (corresponding to CompDTU
 and CompDTUme models respectively).  If runWithME is TRUE ensure YInfRep is non-NULL and if runWithME is FALSE ensure Y is non-NULL.}
 
-\item{extraPredictors}{is an optional matrix of additional predictor values.  This should have one row per sample and one column per predictor.  The column names of the matrix will be taken as the names of the predictor.
-The condition variable should not be included in this matrix because it is included automatically via the \code{Group} parameter.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed). Set to NULL if custom design matrices will be specified by the NullDesign and AltDesign arguments.}
-
-\item{customHypTest}{should be set to TRUE if custom design matricies will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group and extraPredictors arguments must be set to NULL.  Default is FALSE.}
+\item{customHypTest}{should be set to TRUE if custom design matrices will be specified using the NullDesign and AltDesign arguments.  If TRUE the Group argument must be set to NULL.  Default is FALSE.}
 
 \item{NullDesign}{specifies the design matrix corresponding to the null hypothesis if a custom hypothesis test is specified via customHypTest being set to TRUE.  Number of rows needs to be the number of samples, even if CompDTUme is to be run (the matrix will be replicated automatically as needed).}
 
@@ -37,7 +33,7 @@ the current dataset being used.
 from the file (4)RunCompositionalRegressions.R in the sample code for the package.
 }
 \details{
-This function loads results from \code{\link{SaveGeneLevelFiles}} thatcontain all input arguments aside from \code{extraPredictors} (if any),
+This function loads results from \code{\link{SaveGeneLevelFiles}} that contain all input arguments aside from any custom specified design matrices,
 and input arguments to \code{\link{CompDTUReg}} are automatically set by \code{\link{startCompDTUReg}}.
 See the file (4)RunCompositionalRegressions.R in the package's SampleCode folder for example code.
 }
