@@ -31,7 +31,7 @@ CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 #Now, examples providing custom specified design matrices under the null and alternative hypotheses
 
 #Load the first gene-level file to get the group (cond) information
-key <- CompDTUReg:::loadRData(GeneFiles[1], objNameToGet = "key")
+key <- CompDTUReg::loadRData(GeneFiles[1], objNameToGet = "key")
 cond <- key$Condition
 
 #Specify null and alternative design matrices.  The rows must be in the same order as key$Identifier, where key is extracted above
