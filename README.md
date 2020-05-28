@@ -77,9 +77,6 @@ Previous results did not incorporate any additional predictors, and we now denom
 ```r
 pred1 <- c(54,23,45,26,78,33,22,44,55,66)
 pred2 <- c(5,2,5,2,5,2,5,2,5,2)
-
-extraPredictors <- matrix(c(pred1, pred2), ncol = 2)
-colnames(extraPredictors) <- c("pred1", "pred2")
 ```
 <br>
 Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.
@@ -90,6 +87,7 @@ Now, load the first gene-level file to get the group (condition) information for
 key <- CompDTUReg:::loadRData(GeneFiles[1], objNameToGet = "key")
 cond <- key$Condition
 
+#The rows must be in the same order as key$Identifier, where key is extracted above
 NullDesign2 <- model.matrix(~pred1 + pred2)
 AltDesign2 <- model.matrix(~pred1 + pred2 + cond)
 ```
@@ -133,13 +131,13 @@ The resulting output is given below:
 ```
 
 
-Now, we test for the significance of pred2 controlling for cond and pred1 in the model:
+Now, we test for the significance of pred2 controlling for cond and pred1 in the model.  The rows of the design matrix again must be in the same order as key$Identifier, where key is extracted above.
 ```r
-#Specify null and altertive design matrices
+#
 NullDesign3 <- model.matrix(~pred1 + cond)
 AltDesign3 <- model.matrix(~pred1 + pred2 + cond)
 
-
+#Run results with the new design matrices
 CompDTUResults3 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = FALSE, customHypTest = TRUE, NullDesign = NullDesign3, AltDesign = AltDesign3))
 CompDTUmeResults3 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TRUE, customHypTest = TRUE, NullDesign = NullDesign3, AltDesign = AltDesign3))
 ```
