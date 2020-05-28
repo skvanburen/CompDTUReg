@@ -43,7 +43,7 @@ CompDTUmeResults1 <- rbindlist(lapply(GeneFiles, startCompDTUReg, runWithME = TR
 The resulting output is given below, and gives the `p-value` as well as the `F` statistic and associated degrees of freedom, which differ for each gene depending on how many transcripts from the gene were incorporated in the model.<br/>
 <br/>
 ```r
-> CompDTUResults1
+CompDTUResults1
                gene_id pval_CompDTU       FStat NumDF DenomDF
  1: ENSG00000000457.13 3.536641e-01    1.314568     3       6
  2: ENSG00000000460.16 1.718228e-02    7.677140     2       7
@@ -55,7 +55,7 @@ The resulting output is given below, and gives the `p-value` as well as the `F` 
  8: ENSG00000001617.11 1.463706e-01    2.610781     3       6
  9: ENSG00000001626.14 2.391880e-03   17.150811     3       6
 10: ENSG00000002016.17 9.985113e-06   90.434329     2       7
-> CompDTUmeResults1
+CompDTUmeResults1
                gene_id pval_CompDTUme       FStat NumDF DenomDF
  1: ENSG00000000457.13   3.351576e-01    1.384456     3       6
  2: ENSG00000000460.16   9.776200e-02    3.301284     2       7
