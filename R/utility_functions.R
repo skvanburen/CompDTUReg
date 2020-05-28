@@ -1522,11 +1522,6 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
   #x is which of the samples from infRepFiles is being used
   f1 <- function(x, genes, infRepFiles){
     print(paste0("Currently loading file ", x))
-    loadRData <- function(fileName){
-      #loads an RData file, and returns it
-      load(fileName)
-      get(ls()[ls() != "fileName"])
-    }
     d <- loadRData(x)
     #Apply over each of the genestouse_split subsets
     d2 <- subset(d, d$gene_id %in% genes)
@@ -1662,6 +1657,7 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
 #Modified from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
 loadRData <- function(fileName, objNameToGet = NULL){
   #loads an RData file, and returns it
+  #Modified from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
   load(fileName)
   #print(ls()[ls() != "fileName"])
   if(is.null(objNameToGet)){
