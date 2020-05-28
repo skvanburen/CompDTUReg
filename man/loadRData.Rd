@@ -4,14 +4,14 @@
 \alias{loadRData}
 \title{Import selected object from a .RData file}
 \usage{
-loadRData(fileName, objNameToGet = NULL)
+loadRData(filePath, objNameToGet = NULL)
 }
 \arguments{
+\item{filePath}{The path of the .RData object to load}
+
 \item{objNameToGet}{The name of the object to extract from the specified .RData file.
 If left to the default value of NULL the function will return the first object alphabetically so specify this argument if
 more than one object is saved within the .RData object.}
-
-\item{filePath}{The path of the .RData object to load}
 }
 \value{
 An R object
