@@ -1654,9 +1654,25 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
 
 #Neat little function that will load an .RData object and save its contents to whatever as the results of the output
 #For example can do d <- loadRData("file.RData") and whatever is loaded is saved as d
-#Modified from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
+#Modified from code fromstackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
+
+
+#'Import selected object from a .RData file
+#'
+#'
+#' \code{loadRData} imports selected object from a .RData file and returns only that object.  Modified from code from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
+#'
+#' @param filePath The path of the .RData object to load
+#' @param objNameToGet The name of the object to extract from the specified .RData file.  
+#' If left to the default value of NULL the function will return the first object alphabetically so specify this argument if
+#' more than one object is saved within the .RData object.
+#'
+#' @details Modified from code from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
+#' @return An R object
+#' 
+#' @export loadRData
 loadRData <- function(fileName, objNameToGet = NULL){
-  #loads an RData file, and returns it
+  #loads an RData file and returns it
   #Modified from stackexchange user ricardo at this link https://stackoverflow.com/questions/5577221/how-can-i-load-an-object-into-a-variable-name-that-i-specify-from-an-r-data-file
   load(fileName)
   #print(ls()[ls() != "fileName"])
