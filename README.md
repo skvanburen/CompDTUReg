@@ -79,7 +79,7 @@ pred1 <- c(54,23,45,26,78,33,22,44,55,66)
 pred2 <- c(5,2,5,2,5,2,5,2,5,2)
 ```
 <br>
-Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.  The rows of the design matrix must be in the same order as key$Identifier, where key is extracted above.
+Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.  The rows of the design matrix must be in the same order as key$Identifier.
 <br>
 
 ```r
