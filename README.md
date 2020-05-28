@@ -79,7 +79,7 @@ pred1 <- c(54,23,45,26,78,33,22,44,55,66)
 pred2 <- c(5,2,5,2,5,2,5,2,5,2)
 ```
 <br>
-Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.
+Now, load the first gene-level file to get the group (condition) information for each sample and create the null and alternative design matricies.  The rows of the design matrix must be in the same order as key$Identifier.
 <br>
 
 ```r
@@ -185,10 +185,13 @@ For a full example of how to use the package starting from quantified RNA-Seq da
    <br>
 Our sample code is written assuming slurm based array jobs, but loops could be used instead by modifying the code (see each file for more details).  We recommend arrays if possible, especially if the number of samples is very high.  Sample array jobs for (2) and (3) respectively are provided as (2)SampleArrayJob.sh and (3)SampleArrayJob.sh.  These files could be run using the following commands: <br>
   <br>
-module load r <br>
-#Update 10 to be the number of biological samples <br>
-sbatch --array=1-10 (2)SampleArrayJob.sh <br>
-  <br>
-module load r <br>
-#Update 10 to be the number of parts the data is split up into <br>
-sbatch --array=1-10 (3)SampleArrayJob.sh <br>
+```
+module load r
+#Update 10 to be the number of biological samples
+sbatch --array=1-10 (2)SampleArrayJob.sh
+```
+```
+module load r
+#Update 10 to be the number of parts the data is split up into
+sbatch --array=1-10 (3)SampleArrayJob.sh
+```
