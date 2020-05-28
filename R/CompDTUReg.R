@@ -56,6 +56,7 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
       if(!all.equal(rownames(NullDesign), rownames(Y)) | !all.equal(rownames(AltDesign), rownames(Y))){
         stop("The rownames of the inputted design matrices do not match the rownames of the response variable, Y.  Verify that the rows of the custom design matrices are in the correct order.")
       }
+    }  
       
     res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, YInfRep = NULL, extraPredictors = extraPredictors, 
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
