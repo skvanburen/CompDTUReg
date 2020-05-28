@@ -11,7 +11,7 @@ useInferentialReplicates <- TRUE
 library(CompDTUReg)
 
 #Directory previous results are loaded from
-#Make sure this matches def_wd from (2)SaveInfRepsAsRData
+#Make sure this matches def_wd from (2)SaveInfRepsAsRData.R
 def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
 
 #Outer directory where the full inferential replicate datasets (if used) and gene level files will be saved
@@ -29,7 +29,7 @@ nsamp <- 10
   #The number necessary will depend on the number of biological replicates/samples
   #For example, we use 10 parts for the 10 replicate SEQC data and 100 for the 462 sample E-GEUV-1 data
   #It is necessary to split the data up to ensure specific files do not get too large for R to use effectively
-  #This becomes especially true as the number of smaples increases
+  #This becomes especially true as the number of samples increases
   #If these files do become too large to deal with effectively, we recommend using point estimates only via CompDTU by setting useInferentialReplicates to FALSE
 nparts <- 10
 
@@ -76,7 +76,7 @@ dirpiece <- infReps
   #and a large number of samples so we recommend a procedure that can run each part separately, such as the array approach mentioned here, if inferential replicates are used
   #If looping over "array_val" instead, ensure curr_part_num gets changed and set properly to range from 1 to nparts and that the SaveGeneLevelFiles function is properly run for each part
   #If useInferentialReplicates is FALSE you will still need to loop over curr_part_num over all code below this line but the code will run much faster and a computing cluster is not likely to be needed
-  #so we provide a sample loop below
+  #so we provide a sample loop below that can be easily used if useInferentialReplicates is FALSE
 if(useInferentialReplicates==TRUE){
   array_val <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
   curr_part_num <- array_val

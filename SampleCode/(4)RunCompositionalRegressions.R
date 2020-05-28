@@ -1,4 +1,4 @@
-#Sample to run the compositional regression models for DTU analysis
+#Sample code to run the compositional regression models for DTU analysis
 
 library(CompDTUReg)
 

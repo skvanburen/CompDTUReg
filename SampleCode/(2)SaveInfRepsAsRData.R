@@ -1,11 +1,12 @@
 #Save Inferential Replicates to R with one file per biological sample
   #These files will be saved within the SalmonFilesDir directory
-  #If interential replicates are not used you may skip the file and go straight to file (3)
+  #If inferential replicates are not used you may skip the file and go straight to file (3)
   #Especially if the number of samples is large it will be very difficult to generate datasets for all inferential replicates without some form of
   #computing cluster available since the total amount of data gets quite large
   #In this case you may be forced to skip use of the inferential replicates and use CompDTU instead of CompDTUme
 library(CompDTUReg)
 
+#Set def_wd location to be the same from file (1)DataProcessing.R
 def_wd <- "/Users/Scott/Documents/Dissertation Data/CompDTURegData/"
 
 #Load tx2gene object that will be needed by future code

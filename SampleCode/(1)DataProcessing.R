@@ -14,12 +14,9 @@ setwd(def_wd)
   #10 replicates with 100 bootstrap samples each
 SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 
-#func_loc <- "~/code/CompFunctions.R"
-#source(func_loc)
-
 #Specify location of annotation to use in maketx2gene
-#GENCODE annotations can be downloaded from https://www.gencodegenes.org/human/
-#We used the annotations for the reference chromosomes only
+  #GENCODE annotations can be downloaded from https://www.gencodegenes.org/human/
+  #We used the annotations for the reference chromosomes only, and used version 27 for the results in the paper
 txdb_loc <- "/Users/Scott/Documents/Dissertation Data/Gencodev27/gencode.v27.annotation.gtf.gz"
 
 
@@ -27,7 +24,7 @@ txdb_loc <- "/Users/Scott/Documents/Dissertation Data/Gencodev27/gencode.v27.ann
 #Construct a cluster from parallel package for possible use later.  For no parallelization, use makeCluster(1)
 clust <- parallel::makeCluster(1)
 
-#Build tx2gene dataframe matching transcripts to genes using GENCODE if it doesn't exist
+#Build tx2gene data.frame matching transcripts to genes using GENCODE if it doesn't exist
 #Will take no more than a few minutes to run
 maketx2gene(txdb_loc = txdb_loc)
 
@@ -36,10 +33,10 @@ load("tx2gene.RData")
 
 
 #Read in Salmon Files and save results (without inferential replicates for now, as trying to save all of them in one file
-  #can easily get prohibitively large)
+  #can get prohibitively large)
 setwd(SalmonFilesDir)
 
-#Set value for countsFromAbundnace parameter for use with txImport
+#Set value for countsFromAbundnace parameter for use with tximport
   #Love (2018) (Swimming downstream: statistical analysis of differential transcript usage following Salmon quantification [version 3])
   #recommends "scaledTPM" for DTU analysis
   #See tximport for further options
@@ -80,14 +77,14 @@ key$Condition <- relevel(as.factor(key$Condition), ref = 1)
 
 
 
-#Use tximport to load in the results that have been pre-quantified by salmon
+#Use tximport package to load in the results that have been pre-quantified by salmon
   #Drop inferential replicates for now, as they will be read in in file (2) if used
 QuantSalmon <- tximport::tximport(QuantFiles, type = "salmon", txOut = TRUE, ignoreTxVersion = FALSE,
                         countsFromAbundance = countsFromAbundance, dropInfReps = TRUE)
 fulltransnames <- rownames(QuantSalmon$abundance) #transcript names
 
 
-#Save the tximport object that contains the results of the salmon quantification as an r quantification
+#Save the tximport object that contains the results of the salmon quantification as an r quantification file
 save(QuantSalmon, QuantFiles, key, fulltransnames, countsFromAbundance,
       file = paste0(SalmonFilesDir, "SalmonData.RData"))
 
@@ -95,9 +92,11 @@ save(QuantSalmon, QuantFiles, key, fulltransnames, countsFromAbundance,
 #Reset working directory to value specified by def_wd
 setwd(def_wd)
 
-#Files will save to def_wd
-  #These will be unfiltered lists with the data with each gene as a separate element
-#This code will likely take around 20-30 minutes to run
+
+  
+  #This code will save data into two formats that will be needed later
+  #See the help file for sumToGene for more information
+  #Files will save to the current working directory
 sumToGene(QuantSalmon = QuantSalmon, tx2gene = tx2gene, clust = clust, key = key,
           countsFromAbundance = countsFromAbundance)
 
