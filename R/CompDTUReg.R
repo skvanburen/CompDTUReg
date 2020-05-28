@@ -43,20 +43,9 @@ startCompDTUReg <- function(x, runWithME, customHypTest = FALSE, NullDesign = NU
     }
     mean.withinhat <- mean.withinhat
     
-    if(customHypTest==TRUE){
-      if(!identical(rownames(NullDesign), rownames(YInfRep)) | !identical(rownames(AltDesign), rownames(YInfRep))){
-        stop("The rownames of the inputted design matrices do not match the rownames of the response variable, YInfRep.  Verify that the rows of the custom design matrices are in the correct order.")
-      }
-    }
     res <- CompDTUReg(genename = genename, Y = NULL, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }else{
-    
-    if(customHypTest==TRUE){
-      if(!identical(rownames(NullDesign), rownames(Y)) | !identical(rownames(AltDesign), rownames(Y))){
-        stop("The rownames of the inputted design matrices do not match the rownames of the response variable, Y.  Verify that the rows of the custom design matrices are in the correct order.")
-      }
-    }  
       
     res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, YInfRep = NULL, 
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
