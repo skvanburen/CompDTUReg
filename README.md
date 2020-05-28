@@ -17,7 +17,7 @@ For details of the model, see the preprint at https://www.biorxiv.org/content/10
 ## Quick Example
 This section will give quick instructions on fitting the `CompDTU` and `CompDTUme` results on data that has already been processed using files (1) through (3) in the SampleCode folder.  For a full walkthrough starting from original data quantified from Salmon, see the "Full Example" section below.
 <br/><br/>
-This code will use the gene level files in contained in the  "GeneLevelFiles.zip" file from the 'CompDTURegSampleData' repo located at https://github.com/skvanburen/CompDTURegSampleData, which has already been processed. This data contains real transcript-level RNA-Seq abundance data for five replicates of two samples.
+This code will use the gene level files in contained in the  "GeneLevelFiles.zip" file from the 'CompDTURegSampleData' repo located at https://github.com/skvanburen/CompDTURegSampleData, which has already been processed. This data contains real transcript-level RNA-Seq abundance data for 10 genes from five replicates of two samples.
 
 In general, data will have to be saved separately for each gene because the size of the data can become too large to load into memory in `R` at once for all genes for all samples if inferential replicates are used and the sample size is large.  Use of this data structure also has the advantage of greatly reducing the amount of memory required to conduct a DTU analysis, and the amount of time required to load small files into `R` is negligible.
 
