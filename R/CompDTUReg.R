@@ -30,7 +30,7 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
   
   if(!is.null(NullDesign) & !is.null(AltDesign) ){
     if(ncol(NullDesign)>=ncol(AltDesign)){
-      stop("The Alternative design matrix does not have more predictors than the null.  Check the specification of the two design matrices.")
+      stop("The Alternative design matrix does not have more predictors than the null design matrix.  Check the specification of the two design matrices.")
     }
   }
   
@@ -42,9 +42,21 @@ startCompDTUReg <- function(x, runWithME, extraPredictors = NULL, customHypTest 
       stop("You have specified runWithME to be TRUE to run the CompDTUme model but the inferential replicate data appears to not exist within the gene-level file.  Did you generate the gene-level files using SaveGeneLevelFiles with useInferentialReplicates set to FALSE by mistake?")
     }
     mean.withinhat <- mean.withinhat
+    
+    if(customHypTest==TRUE){
+      if(!all.equal(rownames(NullDesign), rownames(YInfRep)) | !all.equal(rownames(AltDesign), rownames(YInfRep))){
+        stop("The rownames of the inputted design matrices do not match the rownames of the response variable, YInfRep.  Verify that the rows of the custom design matrices are in the correct order.")
+      }
+    }
     res <- CompDTUReg(genename = genename, Y = NULL, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       extraPredictors = extraPredictors, customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }else{
+    
+    if(customHypTest==TRUE){
+      if(!all.equal(rownames(NullDesign), rownames(Y)) | !all.equal(rownames(AltDesign), rownames(Y))){
+        stop("The rownames of the inputted design matrices do not match the rownames of the response variable, Y.  Verify that the rows of the custom design matrices are in the correct order.")
+      }
+      
     res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, YInfRep = NULL, extraPredictors = extraPredictors, 
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
   }
