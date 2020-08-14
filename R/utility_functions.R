@@ -1760,7 +1760,7 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
     ilrMeansCovsNoOtherGroupsFiltered <- lapply(genestouse1, calcIlrMeansCovs, dat = abDatasetsToUse1, nsamp = nsamp, CLE = CLE, CLEParam = CLEParam)
     proc.time() - d1
     #ilrMeansCovsNoOtherGroupsFiltered <- laply(genestouse3, calcIlrMeansCovs, dat = abDatasetsToUse3, nsamp = nsamp, .inform=T, .progress = T)
-    names(ilrMeansCovsNoOtherGroupsFiltered) <- genestouse3
+    names(ilrMeansCovsNoOtherGroupsFiltered) <- genestouse1
 
     assign(paste0("ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num), ilrMeansCovsNoOtherGroupsFiltered)
     #assign(paste0("WithinSubjectCovarianceMatricesFilteredPart", curr_part_num), ilrMeansCovsNoOtherGroupsFiltered)
