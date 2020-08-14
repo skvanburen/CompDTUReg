@@ -1889,6 +1889,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.05){
 #' @param curr_part_num if the current part number to save results for.  See \code{\link{SaveFullinfRepDat}} for more details.
 #' @param useInferentialReplicates is set to TRUE if inferential replicates are to be used in the analysis and FALSE otherwise.   If useInferentialReplicates if set to FALSE the gene-level files will only contain data corresponding to the point estimates (output as Y)
 #' and if it is TRUE the gene-level files will also contain data corresponding to the inferential replicates (output as YInfRep)  If FALSE the argument \code{GibbsSamps} is ignored.
+#' @param SaveWithFullCovMatricies is set to TRUE to output the full list of within-subject covariance matrices for each subject.  Default is FALSE, these are not needed to run the CompDTU regression models.
 #'
 #' @return The function saves gene-level .RData files within the subdirectory \code{GeneLevelFilesSaveDir} of \code{save_dir} that contain all necessary
 #' information to run a \code{\link{CompDTUReg}} analysis, including inferential replicates (if any).  The name of each file is the name of the current gene.  Specifically, these files contain: \cr
@@ -1904,7 +1905,7 @@ calcIlrMeansCovs <- function(x, dat, nsamp, CLE = TRUE, CLEParam = 0.05){
 #' @details See the file (3)SaveNecessaryDatasetsForCompDTUReg.R in the package's SampleCode folder for example code.
 #' @export SaveGeneLevelFiles
 SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, useInferentialReplicates = TRUE, GibbsSamps,
-                               CLE = TRUE, CLEParam = 0.05){
+                               CLE = TRUE, CLEParam = 0.05, SaveWithFullCovMatricies = FALSE){
     setwd(directory)
 
 
@@ -2049,7 +2050,15 @@ SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, 
     genename <- curr_gene
 
     if(useInferentialReplicates==TRUE){
-      save(key, Group, Y, samps, mean.withinhat, YInfRep, genename, file = paste0(GeneLevelFilesSaveDir, curr_gene, ".RData"))
+      
+      if(SaveWithFullCovMatricies==TRUE){
+        FullCovMatricies <- GibbsCovsToUse
+        save(key, Group, Y, samps, mean.withinhat, FullCovMatricies, YInfRep, genename, file = paste0(GeneLevelFilesSaveDir, curr_gene, ".RData"))
+        rm(FullCovMatricies)
+      }else{
+        save(key, Group, Y, samps, mean.withinhat, YInfRep, genename, file = paste0(GeneLevelFilesSaveDir, curr_gene, ".RData"))
+      }
+      
       rm(abDatasetsToUse)
       rm(GibbsCovsToUse)
       rm(ilrMeansCovs)
