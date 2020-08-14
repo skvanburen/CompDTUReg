@@ -1716,18 +1716,18 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
 
 
     load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
-    load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num, ".RData"))
+    #load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num, ".RData"))
 
     abDatasetsToUse1 <- get(paste0("abDatasets", dirpiece, "Part", curr_part_num))
     genestouse1 <- names(abDatasetsToUse1)
 
-    abDatasetsToUse2 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num))
-    genestouse2 <- names(abDatasetsToUse2)
-
-    load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
-
-    abDatasetsToUse3 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num))
-    genestouse3 <- names(abDatasetsToUse3)
+    # abDatasetsToUse2 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num))
+    # genestouse2 <- names(abDatasetsToUse2)
+    # 
+    # load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
+    # 
+    # abDatasetsToUse3 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num))
+    # genestouse3 <- names(abDatasetsToUse3)
 
     
     load(paste0(directory, "cntGenecntsScaledTPMFiltered.RData"))
@@ -1754,10 +1754,10 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
 
     #names(abDatasetsToUse3) <- genen
 
-    genestouse3 <- names(abDatasetsToUse3)
+    #genestouse3 <- names(abDatasetsToUse3)
 
     d1 <- proc.time()
-    ilrMeansCovsNoOtherGroupsFiltered <- lapply(genestouse3, calcIlrMeansCovs, dat = abDatasetsToUse3, nsamp = nsamp, CLE = CLE, CLEParam = CLEParam)
+    ilrMeansCovsNoOtherGroupsFiltered <- lapply(genestouse1, calcIlrMeansCovs, dat = abDatasetsToUse1, nsamp = nsamp, CLE = CLE, CLEParam = CLEParam)
     proc.time() - d1
     #ilrMeansCovsNoOtherGroupsFiltered <- laply(genestouse3, calcIlrMeansCovs, dat = abDatasetsToUse3, nsamp = nsamp, .inform=T, .progress = T)
     names(ilrMeansCovsNoOtherGroupsFiltered) <- genestouse3
