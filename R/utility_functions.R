@@ -1614,8 +1614,8 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
     abGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = TRUE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
     names(abGNO) <- curr_genes
 
-    assign(paste0("abDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num), abGNO)
-    obj2 <- c(paste0("abDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num))
+    assign(paste0("abDatasets", type, "Part", curr_part_num), abGNO)
+    obj2 <- c(paste0("abDatasets", type, "Part", curr_part_num))
 
     rm(abGNO)
     gc()
@@ -1624,18 +1624,18 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
       dir.create(paste0(save_dir, sd1))
     }
 
-    save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd1, "abDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
+    save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd1, "abDatasets", type, "Part", curr_part_num, ".RData"))
 
 
-    rm(list = paste0("abDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num))
+    rm(list = paste0("abDatasets", type, "Part", curr_part_num))
     gc()
 
 
     cntGNO <- lapply(curr_genes, generateData, dat = datt2, nsamp = nsamp, abundance = FALSE, abCompDatasets = abDatasetsFiltered, useOtherGroups = FALSE, useExistingOtherGroups = FALSE, infReps = infReps, ninfreps = ninfreps)
     names(cntGNO) <- curr_genes
 
-    assign(paste0("cntDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num), cntGNO)
-    obj2 <- c(paste0("cntDatasets", type, "NoOtherGroupsFilteredPart", curr_part_num))
+    assign(paste0("cntDatasets", type, "Part", curr_part_num), cntGNO)
+    obj2 <- c(paste0("cntDatasets", type, "Part", curr_part_num))
 
     rm(cntGNO)
     gc()
@@ -1645,7 +1645,7 @@ SaveFullinfRepDat <- function(SalmonFilesDir, QuantSalmon, abDatasetsFiltered, s
     }
 
     #save(abDatasetsGibbsRepsNoOtherGroups, InfRepsKey, ninfreps, nsamp, file = "abDatasetsGibbsRepsNoOtherGroups.RData")
-    save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
+    save(InfRepsKey, ninfreps, nsamp, list = obj2, file = paste0(save_dir, sd2, "cntDatasets", type,  "Part", curr_part_num, ".RData"))
   
 
 
@@ -1724,9 +1724,9 @@ SaveWithinSubjCovMatrices <- function(directory, save_dir, GibbsSamps, curr_part
     # abDatasetsToUse2 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsPart", curr_part_num))
     # genestouse2 <- names(abDatasetsToUse2)
     # 
-    # load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num, ".RData"))
+    # load(paste0(save_dir, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num, ".RData"))
     # 
-    # abDatasetsToUse3 <- get(paste0("abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num))
+    # abDatasetsToUse3 <- get(paste0("abDatasets", dirpiece, "Part", curr_part_num))
     # genestouse3 <- names(abDatasetsToUse3)
 
     
@@ -1941,7 +1941,7 @@ SaveGeneLevelFiles <- function(directory, GeneLevelFilesSaveDir, curr_part_num, 
     ilrMeansCovsSubDir <- "WithinSubjectCovarianceMatrices/"
 
       ilrMeansCovs <- loadRData(paste0(directory, ilrMeansCovsSubDir, "ilrMeansCovsNoOtherGroupsFilteredPart", curr_part_num, ".RData"))
-      newAbDatasetsinfRepsFinal <- loadRData(paste0(directory, abDatasetsSubDir, "abDatasets", dirpiece, "NoOtherGroupsFilteredPart", curr_part_num,".RData"))
+      newAbDatasetsinfRepsFinal <- loadRData(paste0(directory, abDatasetsSubDir, "abDatasets", dirpiece, "Part", curr_part_num,".RData"))
 
     newAbDatasetsinfRepsFinalSub <- newAbDatasetsinfRepsFinal[names(newAbDatasetsinfRepsFinal) %in% genestouse]
     ilrMeansCovsSub <- ilrMeansCovs[names(ilrMeansCovs) %in% genestouse]
