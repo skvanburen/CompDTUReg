@@ -480,8 +480,8 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
 
   #Generate total sums for each sample/gene combo by
   #aggregating over each gene (ie total expression for that gene in that sample)
-  abgenetotals <- stats::aggregate(abGeneTemp2[,abcolnums], by = list(gene_id = abGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
-  cntgenetotals <- stats::aggregate(cntGeneTemp2[,cntcolnums], by = list(gene_id = cntGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
+  abgenetotals <- stats::aggregate(abGeneTemp2[,abcolnums, drop = FALSE], by = list(gene_id = abGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
+  cntgenetotals <- stats::aggregate(cntGeneTemp2[,cntcolnums, drop = FALSE], by = list(gene_id = cntGeneTemp2$gene_id), FUN = "sum", drop = FALSE)
 
   #TGE short for total gene expression, ie total expression of that gene for that sample across all transcripts
 
@@ -496,8 +496,8 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
 
   #Calculate total gene expression across all samples because a gene will have to be dropped from analysis if its expression
   # is 0 for all samples - ie, will later filter out genes with SumTGE=0
-  abgenetotals$SumTGE <- rowSums(abgenetotals[,-1], na.rm = TRUE)
-  cntgenetotals$SumTGE <- rowSums(cntgenetotals[,-1], na.rm = TRUE)
+  abgenetotals$SumTGE <- rowSums(abgenetotals[,-1, drop = FALSE], na.rm = TRUE)
+  cntgenetotals$SumTGE <- rowSums(cntgenetotals[,-1, drop = FALSE], na.rm = TRUE)
 
   #Also calculate MeanTGE level (which is juse mean of SumTGE above)
   abgenetotals$MeanTGE <- abgenetotals$SumTGE/nsamp
@@ -512,8 +512,8 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
       assign(paste0("SampsCond", i), subset(key$Identifier, Group==levels(key$Condition)[i]))
       Samps <- get(paste0("SampsCond", i))
       cols <- paste0(Samps, "TGE")
-      condSumAb <- rowSums(abgenetotals[,cols])
-      condSumCnt <- rowSums(cntgenetotals[,cols])
+      condSumAb <- rowSums(abgenetotals[,cols, drop = FALSE])
+      condSumCnt <- rowSums(cntgenetotals[,cols, drop = FALSE])
       val1 <- paste0("SumTGECond", i)
       abgenetotals[,val1] <- condSumAb
       cntgenetotals[,val1] <- condSumCnt

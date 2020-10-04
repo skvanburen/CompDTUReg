@@ -1,7 +1,7 @@
 Package: CompDTUReg
 Type: Package
 Title: CompDTUReg: Fit Compositional Regression Models for DTU
-Version: 1.0.10
+Version: 1.0.11
 Authors@R: c(person("Scott", "Van Buren", email = "skvanburen@gmail.com", role = c("aut", "cre")))
 Maintainer: Scott Van Buren <skvanburen@gmail.com>
 Description: Fits Compositional Regression models for DTU analysis.
