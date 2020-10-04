@@ -435,8 +435,8 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
     cntGeneTemp1 <- counts
   }
 
-  abGeneTemp2 <- as.data.frame(abGeneTemp1[order(abGeneTemp1$gene_id, abGeneTemp1$tx_id),])
-  cntGeneTemp2 <- as.data.frame(cntGeneTemp1[order(cntGeneTemp1$gene_id, cntGeneTemp1$tx_id),])
+  abGeneTemp2 <- as.data.frame(abGeneTemp1[order(abGeneTemp1$gene_id, abGeneTemp1$tx_id), , drop = FALSE])
+  cntGeneTemp2 <- as.data.frame(cntGeneTemp1[order(cntGeneTemp1$gene_id, cntGeneTemp1$tx_id), , drop = FALSE])
 
   #t3 <- subset(abGeneTemp2, abGeneTemp2$tx_id=="ENST00000161559.10")
   if(infReps == "none"){
@@ -523,12 +523,12 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
       cntgenetotals[,val2] <- condSumCnt/length(get(paste0("SampsCond", i)))
 
       cols2 <- paste0(Samps, "TPM")
-      tempp <- abGeneTemp2[,cols2]
+      tempp <- abGeneTemp2[,cols2, drop = FALSE]
       val3 <- paste0("MeanTPMCond", i)
       abGeneTemp2[,val3] <- rowMeans(tempp)
 
       cols3 <- paste0(Samps, "Cnt")
-      tempp <- cntGeneTemp2[,cols3]
+      tempp <- cntGeneTemp2[,cols3, drop = FALSE]
       val4 <- paste0("MeanCntCond", i)
       cntGeneTemp2[,val4] <- rowMeans(tempp)
 
@@ -566,8 +566,8 @@ prepareData <- function(abundance, counts, lengths, tx2gene, nsamp, key = NULL, 
   }
 
 
-  abGeneTemp3$meanRTA <- rowMeans(abGeneTemp3[,abRTAcols], na.rm = TRUE)
-  cntGeneTemp3$meanRTA <- rowMeans(cntGeneTemp3[,cntRTAcols], na.rm = TRUE)
+  abGeneTemp3$meanRTA <- rowMeans(abGeneTemp3[,abRTAcols, drop = FALSE], na.rm = TRUE)
+  cntGeneTemp3$meanRTA <- rowMeans(cntGeneTemp3[,cntRTAcols, drop = FALSE], na.rm = TRUE)
 
 
   #Merge in length information into count data file for possible use later
