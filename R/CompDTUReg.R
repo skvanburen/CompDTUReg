@@ -42,14 +42,17 @@ startCompDTUReg <- function(x, runWithME, customHypTest = FALSE, NullDesign = NU
       stop("You have specified runWithME to be TRUE to run the CompDTUme model but the inferential replicate data appears to not exist within the gene-level file.  Did you generate the gene-level files using SaveGeneLevelFiles with useInferentialReplicates set to FALSE by mistake?")
     }
     mean.withinhat <- mean.withinhat
-    
+    startTime <- proc.time()
     res <- CompDTUReg(genename = genename, Y = NULL, Group = Group, runWithME = TRUE, YInfRep = YInfRep, mean.withinhat = mean.withinhat,
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
+    TotalTime <- proc.time() - startTime
   }else{
-      
+    startTime <- proc.time()
     res <- CompDTUReg(genename = genename, Y = Y, Group = Group, runWithME = FALSE, YInfRep = NULL, 
                       customHypTest = customHypTest, NullDesign = NullDesign, AltDesign = AltDesign)
+    TotalTime <- proc.time() - startTime
   }
+  res$ComputationTime <- TotalTime[3]
   return(res)
 }
 
