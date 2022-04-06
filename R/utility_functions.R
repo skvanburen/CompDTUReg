@@ -1679,7 +1679,7 @@ loadRData <- function(filePath, objNameToGet = NULL){
   if(is.null(objNameToGet)){
     rm(objNameToGet)
     #print(ls()[ls() != "filePath"])
-    return(get(ls()[ls() != "filePath"]))
+    return(get(ls()[ls() != "filePath"][[1]]))
   }else{
     return(get(objNameToGet))
   }
