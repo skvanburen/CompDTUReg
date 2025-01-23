@@ -83,6 +83,7 @@ if(useInferentialReplicates==TRUE){
   
   #Specify directory where Salmon quantification files are saved
   #should match the same argument from (2)
+  #Ensure this SalmonFilesDir ends in a / to ensure code compatibility
   SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
   
   #Load Salmon quantification object imported into R format using tximport in (1)DataProcessing.R
