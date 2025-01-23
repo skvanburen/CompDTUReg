@@ -16,6 +16,7 @@ load(paste0(def_wd,"tx2gene.RData"))
   #and where the sample specific inferential replicates will be saved
 
 #SalmonFilesDir is the directory where the Salmon quantification results have already been saved
+#Ensure this SalmonFilesDir ends in a / to ensure code compatibility
 SalmonFilesDir <- paste0(def_wd, "ExampleSalmonQuantifications/")
 setwd(SalmonFilesDir)
 
@@ -63,5 +64,6 @@ countsFromAbundance <- "scaledTPM"
 #Files will be saved to SalmonFilesDir/BootSamps for bootstrap samples or /GibbsSamps for Gibbs samples
 #Should take something like 15 minutes to run per sample, leading to the recommendation that each sample
   #be run separately (such as part of an array job) is possible
+#The direc_to_save_res argument should be set to SalmonFilesDir to ensure code compatibility
 SaveInfRepDataAsRData(curr_samp = curr_samp, tx2gene = tx2gene, curr_file_loc = curr_file_loc, GibbsSamps = GibbsSamps,
                      countsFromAbundance = countsFromAbundance, direc_to_save_res = SalmonFilesDir)
